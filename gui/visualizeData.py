@@ -18,10 +18,17 @@ def register(app):
     @app.route("/api/keys", methods=["POST"])
     @login_required
     def api_keys():
-        data = request.get_json(force=True)
-        device_ids = data.get("device_ids", [])
-        keys = get_all_keys(device_ids)
-        return jsonify(keys)
+        try:
+            data = request.get_json(force=True)
+            device_ids = data.get("device_ids", [])
+            print("Requested device_ids:", device_ids)
+            keys = get_all_keys(device_ids)
+            print("Keys fetched:", keys)
+            return jsonify(keys)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 500
 
     @app.route("/api/data", methods=["POST"])
     @login_required
