@@ -3,13 +3,16 @@
 <head>
     <title>Visualize Data</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        select { min-width: 300px; }
+    </style>
 </head>
 <body>
 
 <h1>Visualize Device Data</h1>
 
-<h3>1. Select Device</h3>
-<select id="deviceSelect">
+<h3>1. Select Device(s)</h3>
+<select id="deviceSelect" multiple size="6">
     {% for id, name, _ in devices %}
     <option value="{{ id }}">{{ name }} ({{ id }})</option>
     {% endfor %}
@@ -24,25 +27,35 @@
 <h3>3. Select Key(s)</h3>
 <div id="keySelectors"></div>
 
+<br>
 <button onclick="loadPlot()">Plot</button>
+<button onclick="exportCSV()">Export CSV</button>
 
 <hr>
 
-<canvas id="chart" width="800" height="400"></canvas>
+<canvas id="chart" width="1000" height="450"></canvas>
 
 <script>
 let chart = null;
+let lastSeries = [];
+
+/* helpers */
+function getSelectedValues(id) {
+    return Array.from(document.getElementById(id).selectedOptions)
+        .map(o => o.value);
+}
 
 document.getElementById("deviceSelect").addEventListener("change", loadKeys);
 document.getElementById("modeSelect").addEventListener("change", loadKeys);
 
 async function loadKeys() {
-    const deviceId = document.getElementById("deviceSelect").value;
+    const deviceIds = getSelectedValues("deviceSelect");
+    if (deviceIds.length === 0) return;
 
     const res = await fetch("/api/keys", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({device_ids: [deviceId]})
+        body: JSON.stringify({ device_ids: deviceIds })
     });
 
     const keys = await res.json();
@@ -53,33 +66,38 @@ async function loadKeys() {
 
     if (mode === "independent") {
         container.innerHTML = `
-            <select id="key">
-                ${keys.map(k => `<option>${k}</option>`).join("")}
+            <select id="keys" multiple size="6">
+                ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
+            <br><br>
+            <label>
+                <input type="checkbox" id="splitPlots">
+                One plot per key
+            </label>
         `;
     } else {
         container.innerHTML = `
             X:
             <select id="xKey">
-                ${keys.map(k => `<option>${k}</option>`).join("")}
+                ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
             Y:
             <select id="yKey">
-                ${keys.map(k => `<option>${k}</option>`).join("")}
+                ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
         `;
     }
 }
 
 async function loadPlot() {
-    const deviceId = document.getElementById("deviceSelect").value;
     const mode = document.getElementById("modeSelect").value;
-
-    let payload = { mode, device_id: deviceId };
+    const payload = { mode };
 
     if (mode === "independent") {
-        payload.key = document.getElementById("key").value;
+        payload.device_ids = getSelectedValues("deviceSelect");
+        payload.keys = getSelectedValues("keys");
     } else {
+        payload.device_id = getSelectedValues("deviceSelect")[0];
         payload.x_key = document.getElementById("xKey").value;
         payload.y_key = document.getElementById("yKey").value;
     }
@@ -91,7 +109,6 @@ async function loadPlot() {
     });
 
     const data = await res.json();
-    console.log("Plot data:", data);
     renderChart(mode, data);
 }
 
@@ -100,18 +117,26 @@ function renderChart(mode, data) {
     if (chart) chart.destroy();
 
     if (mode === "independent") {
+        lastSeries = data;
+        const split = document.getElementById("splitPlots").checked;
+
         chart = new Chart(ctx, {
             type: "line",
             data: {
-                datasets: [{
-                    label: "Value",
-                    data: data.map(p => ({x: p.t, y: p.v})),
-                }]
+                datasets: data.map(s => ({
+                    label: `${s.device_id}:${s.key}`,
+                    data: s.points.map(p => ({ x: p.t, y: p.v })),
+                }))
             },
             options: {
                 scales: {
-                    x: { type: "linear", title: { display: true, text: "Time (s)" }},
-                    y: { title: { display: true, text: "Value" }},
+                    x: {
+                        type: "linear",
+                        title: { display: true, text: "Time (s)" }
+                    },
+                    y: {
+                        title: { display: true, text: "Value" }
+                    }
                 }
             }
         });
@@ -121,17 +146,39 @@ function renderChart(mode, data) {
             data: {
                 datasets: [{
                     label: "XY",
-                    data: data,
+                    data: data
                 }]
             },
             options: {
                 scales: {
-                    x: { title: { display: true, text: "X" }},
-                    y: { title: { display: true, text: "Y" }},
+                    x: { title: { display: true, text: "X" } },
+                    y: { title: { display: true, text: "Y" } }
                 }
             }
         });
     }
+}
+
+function exportCSV() {
+    if (!lastSeries.length) return;
+
+    const rows = ["device_id,key,timestamp,value"];
+
+    lastSeries.forEach(s => {
+        s.points.forEach(p => {
+            rows.push(`${s.device_id},${s.key},${p.t},${p.v}`);
+        });
+    });
+
+    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "timeseries.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
 }
 
 loadKeys();

@@ -40,15 +40,28 @@ def register(app):
             device_id = data["device_id"]
 
             if mode == "independent":
-                key = data["key"]
-                rows = get_time_series(device_id, key)
-                return jsonify([
-                    {
-                        "t": r[0] + r[1] / 1e9,
-                        "v": r[2],
-                    }
-                    for r in rows
-                ])
+                device_ids = data["device_ids"]
+                keys = data["keys"]
+
+                result = []
+
+                for device_id in device_ids:
+                    for key in keys:
+                        rows = get_time_series(device_id, key)
+                        result.append({
+                            "device_id": device_id,
+                            "key": key,
+                            "points": [
+                                {
+                                    "t": r[0] + r[1] / 1e9,
+                                    "v": float(r[2]),
+                                }
+                                for r in rows
+                            ]
+                        })
+
+                return jsonify(result)
+
 
             if mode == "xy":
                 x_key = data["x_key"]
