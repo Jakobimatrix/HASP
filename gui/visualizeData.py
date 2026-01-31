@@ -13,7 +13,7 @@ def register(app):
     @login_required
     def visualize():
         devices = get_all_devices()
-        return render_template("visualize.html", devices=devices)
+        return render_template("visualizeData.html", devices=devices)
 
     @app.route("/api/keys", methods=["POST"])
     @login_required
