@@ -1,4 +1,4 @@
-CREATE TABLE measurements (
+CREATE TABLE IF NOT EXISTS measurements (
     device_id   TEXT    NOT NULL,
     ts_sec      INTEGER NOT NULL,
     ts_nsec     INTEGER NOT NULL,
