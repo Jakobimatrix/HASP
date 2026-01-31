@@ -86,7 +86,8 @@ systemctl enable hasp.service
 systemctl restart hasp.service
 
 echo "Creating admin user..."
-python3 "$HOME_DIR/HASP/scripts/newUser.py"
+cd "$HOME_DIR"
+python3 -m scripts.newUser
 
 echo "Installation complete."
 echo "Access HASP at: https://<your-server-ip>:5000"
