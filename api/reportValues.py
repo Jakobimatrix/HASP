@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from db.devices import device_exists, update_last_seen
 from utilities.time_utils import Timestamp, get_timestamp
+from db.device_data import insert_measurements
 
 def register(app):
 
