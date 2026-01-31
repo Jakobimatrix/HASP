@@ -46,7 +46,6 @@ async function loadKeys() {
     });
 
     const keys = await res.json();
-    console.log(res);
     const mode = document.getElementById("modeSelect").value;
     const container = document.getElementById("keySelectors");
 
@@ -92,6 +91,7 @@ async function loadPlot() {
     });
 
     const data = await res.json();
+    console.log("Plot data:", data);
     renderChart(mode, data);
 }
 
