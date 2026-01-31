@@ -6,6 +6,7 @@
     <style>
         select { min-width: 300px; }
     </style>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
 </head>
 <body>
 
@@ -112,8 +113,9 @@ async function loadPlot() {
     if (!Array.isArray(data)) {
         console.error("Expected array, got:", data);
         alert("Backend error – see console");
-    return;
-}
+        return;
+    }
+    lastSeries = data; 
     renderChart(mode, data);
 }
 
@@ -201,13 +203,19 @@ function renderChart(mode, data) {
 
 
 function exportCSV() {
-    if (!lastSeries.length) return;
+    if (!lastSeries.length) {
+        alert("Nothing to export");
+        return;
+    }
 
     const rows = ["device_id,key,timestamp,value"];
 
     lastSeries.forEach(s => {
-        s.points.forEach(p => {
-            rows.push(`${s.device_id},${s.key},${p.t},${p.v}`);
+        s.points
+        .slice()
+        .sort((a, b) => a.t - b.t)
+        .forEach(p => {
+            rows.push(`"${s.device_id}","${s.key}",${p.t},${p.v}`);
         });
     });
 

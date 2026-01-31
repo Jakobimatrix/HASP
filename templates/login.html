@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
-<head><title>Login</title></head>
+  <head>
+    <title>Login</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+  </head>
 <body>
 <h1>Login</h1>
 {% if error %}<p style="color:red">{{ error }}</p>{% endif %}

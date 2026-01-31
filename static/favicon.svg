@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+
+  <!-- background -->
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#1e293b"></rect>
+
+  <!-- main control panel -->
+  <rect x="14" y="14" width="36" height="36" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="2"></rect>
+
+  <!-- status lights -->
+  <circle cx="24" cy="26" r="3" fill="#22c55e"></circle>
+  <circle cx="32" cy="26" r="3" fill="#eab308"></circle>
+  <circle cx="40" cy="26" r="3" fill="#ef4444"></circle>
+
+  <!-- data bars -->
+  <rect x="22" y="34" width="4" height="10" fill="#38bdf8"></rect>
+  <rect x="30" y="30" width="4" height="14" fill="#38bdf8"></rect>
+  <rect x="38" y="36" width="4" height="8" fill="#38bdf8"></rect>
+
+  <!-- side modules -->
+  <rect x="6" y="22" width="6" height="20" rx="3" fill="#334155"></rect>
+  <rect x="52" y="22" width="6" height="20" rx="3" fill="#334155"></rect>
+
+</svg>
