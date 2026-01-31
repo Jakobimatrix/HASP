@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit User</title>
+</head>
+<body>
+    <h1>Edit User: {{ username }}</h1>
+
+    {% if message %}
+        <p style="color: red">{{ message }}</p>
+    {% endif %}
+
+    <form method="post">
+        <label for="groups">Groups (comma-separated):</label><br>
+        <input type="text" id="groups" name="groups" value="{{ groups | join(', ') }}" required><br><br>
+
+        <label for="password">New Password (leave empty to keep current):</label><br>
+        <input type="password" id="password" name="password"><br><br>
+
+        <label for="password2">Re-enter New Password:</label><br>
+        <input type="password" id="password2" name="password2"><br><br>
+
+        <input type="submit" value="Update User">
+    </form>
+
+    <p><a href="{{ url_for('user.list') }}">Back to user list</a></p>
+    <p><a href="{{ url_for('index') }}">Back to index</a></p>
+</body>
+</html>

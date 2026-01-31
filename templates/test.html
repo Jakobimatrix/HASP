@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jakobimatrix Home Ass is tant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: sans-serif;
+            text-align: center;
+            margin-top: 20vh;
+        }
+        .ok {
+            font-size: 2rem;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="ok">
+        Server is running
+    </div>
+    <p>
+        If you can see this page, the Flask backend and GUI routing work.
+    </p>
+    <p><a href="{{ url_for('index') }}">Back to index</a></p>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User List</title>
+</head>
+<body>
+    <h1>User List</h1>
+
+    <table border="1" cellpadding="5">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Groups</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><a href="{{ url_for('user.edit', username=user.username) }}">{{ user.username }}</a></td>
+                <td>{{ user.groups | join(', ') }}</td>
+                <td>
+                    <a href="{{ url_for('user.delete', username=user.username) }}"
+                       onclick="return confirm('Are you sure you want to delete {{ user.username }}?');">DELETE</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p><a href="{{ url_for('user.add') }}">Add new user</a></p>
+    <p><a href="{{ url_for('index') }}">Back to index</a></p>
+</body>
+</html>
+

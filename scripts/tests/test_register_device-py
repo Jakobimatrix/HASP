@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+import requests
+import json
+
+URL = "https://homeassistant.local:5000/api/registerDevice"
+
+payload = {
+    "name": "LivingRoomSensor",
+    "definition": json.dumps({
+        "inputs": ["button", "temperature"],
+        "outputs": ["led_strip"]
+    })
+}
+
+response = requests.post(
+    URL,
+    json=payload,
+    verify=False,   # self-signed cert
+    timeout=5
+)
+
+print("Status code:", response.status_code)
+print("Response JSON:")
+print(response.json())

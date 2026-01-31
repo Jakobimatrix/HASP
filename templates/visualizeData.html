@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualize Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Visualize Device Data</h1>
+
+<h3>1. Select Device</h3>
+<select id="deviceSelect">
+    {% for id, name, _ in devices %}
+    <option value="{{ id }}">{{ name }} ({{ id }})</option>
+    {% endfor %}
+</select>
+
+<h3>2. Select Visualization Mode</h3>
+<select id="modeSelect">
+    <option value="independent">Time series (Y vs Time)</option>
+    <option value="xy">XY plot (X vs Y)</option>
+</select>
+
+<h3>3. Select Key(s)</h3>
+<div id="keySelectors"></div>
+
+<button onclick="loadPlot()">Plot</button>
+
+<hr>
+
+<canvas id="chart" width="800" height="400"></canvas>
+
+<script>
+let chart = null;
+
+document.getElementById("deviceSelect").addEventListener("change", loadKeys);
+document.getElementById("modeSelect").addEventListener("change", loadKeys);
+
+async function loadKeys() {
+    const deviceId = document.getElementById("deviceSelect").value;
+
+    const res = await fetch("/api/keys", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({device_ids: [deviceId]})
+    });
+
+    const keys = await res.json();
+    const mode = document.getElementById("modeSelect").value;
+    const container = document.getElementById("keySelectors");
+
+    container.innerHTML = "";
+
+    if (mode === "independent") {
+        container.innerHTML = `
+            <select id="key">
+                ${keys.map(k => `<option>${k}</option>`).join("")}
+            </select>
+        `;
+    } else {
+        container.innerHTML = `
+            X:
+            <select id="xKey">
+                ${keys.map(k => `<option>${k}</option>`).join("")}
+            </select>
+            Y:
+            <select id="yKey">
+                ${keys.map(k => `<option>${k}</option>`).join("")}
+            </select>
+        `;
+    }
+}
+
+async function loadPlot() {
+    const deviceId = document.getElementById("deviceSelect").value;
+    const mode = document.getElementById("modeSelect").value;
+
+    let payload = { mode, device_id: deviceId };
+
+    if (mode === "independent") {
+        payload.key = document.getElementById("key").value;
+    } else {
+        payload.x_key = document.getElementById("xKey").value;
+        payload.y_key = document.getElementById("yKey").value;
+    }
+
+    const res = await fetch("/api/data", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    renderChart(mode, data);
+}
+
+function renderChart(mode, data) {
+    const ctx = document.getElementById("chart").getContext("2d");
+    if (chart) chart.destroy();
+
+    if (mode === "independent") {
+        chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                datasets: [{
+                    label: "Value",
+                    data: data.map(p => ({x: p.t, y: p.v})),
+                }]
+            },
+            options: {
+                scales: {
+                    x: { type: "linear", title: { display: true, text: "Time (s)" }},
+                    y: { title: { display: true, text: "Value" }},
+                }
+            }
+        });
+    } else {
+        chart = new Chart(ctx, {
+            type: "scatter",
+            data: {
+                datasets: [{
+                    label: "XY",
+                    data: data,
+                }]
+            },
+            options: {
+                scales: {
+                    x: { title: { display: true, text: "X" }},
+                    y: { title: { display: true, text: "Y" }},
+                }
+            }
+        });
+    }
+}
+
+loadKeys();
+</script>
+
+<p><a href="{{ url_for('devices') }}">Back to devices</a></p>
+
+</body>
+</html>
