@@ -44,8 +44,8 @@ def register(app):
                 rows = get_time_series(device_id, key)
                 return jsonify([
                     {
-                        "t": r["ts_sec"] + r["ts_nsec"] / 1e9,
-                        "v": r["value"],
+                        "t": r[0] + r[1] / 1e9,
+                        "v": r[2],
                     }
                     for r in rows
                 ])
@@ -55,7 +55,7 @@ def register(app):
                 y_key = data["y_key"]
                 rows = get_xy_series(device_id, x_key, y_key)
                 return jsonify([
-                    {"x": r["x"], "y": r["y"]}
+                    {"x": r[0], "y": r[1]}
                     for r in rows
                 ])
 
