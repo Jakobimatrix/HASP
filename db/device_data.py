@@ -1,5 +1,7 @@
 import sqlite3
 from pathlib import Path
+from typing import Any
+
 from utilities.time_utils import Timestamp, get_timestamp
 
 
