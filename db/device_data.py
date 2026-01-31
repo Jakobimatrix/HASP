@@ -105,7 +105,7 @@ def get_all_keys(device_ids: Optional[list[str]] = None):
             rows = con.execute(
                 "SELECT DISTINCT key FROM measurements ORDER BY key"
             )
-        return [r["key"] for r in rows]
+        return [r[0] for r in rows]
 
 def get_time_series(device_id: str, key: str):
     with get_connection() as con:
