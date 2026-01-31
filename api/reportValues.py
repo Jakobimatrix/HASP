@@ -81,4 +81,5 @@ def register(app):
             )
 
         insert_measurements(rows)
+        return jsonify({"status": "ok"}), 200
 
