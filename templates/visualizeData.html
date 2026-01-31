@@ -33,7 +33,7 @@
 
 <hr>
 
-<canvas id="chart" width="1000" height="450"></canvas>
+<div id="chartContainer"></div>
 
 <script>
 let chart = null;
@@ -117,52 +117,88 @@ async function loadPlot() {
     renderChart(mode, data);
 }
 
+let charts = [];
+
+function clearCharts() {
+    charts.forEach(c => c.destroy());
+    charts = [];
+    document.getElementById("chartContainer").innerHTML = "";
+}
+
 function renderChart(mode, data) {
-    const ctx = document.getElementById("chart").getContext("2d");
-    if (chart) chart.destroy();
+    clearCharts();
 
     if (mode === "independent") {
-        lastSeries = data;
         const split = document.getElementById("splitPlots").checked;
+        const container = document.getElementById("chartContainer");
 
-        chart = new Chart(ctx, {
-            type: "line",
-            data: {
-                datasets: data.map(s => ({
-                    label: `${s.device_id}:${s.key}`,
-                    data: s.points.map(p => ({ x: p.t, y: p.v })),
-                }))
-            },
-            options: {
-                scales: {
-                    x: {
-                        type: "linear",
-                        title: { display: true, text: "Time (s)" }
-                    },
-                    y: {
-                        title: { display: true, text: "Value" }
+        if (!split) {
+            // ONE chart, many datasets
+            const canvas = document.createElement("canvas");
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext("2d");
+            charts.push(new Chart(ctx, {
+                type: "line",
+                data: {
+                    datasets: data.map(s => ({
+                        label: `${s.device_id}:${s.key}`,
+                        data: s.points.map(p => ({ x: p.t, y: p.v })),
+                    }))
+                },
+                options: {
+                    scales: {
+                        x: { type: "linear", title: { display: true, text: "Time (s)" } },
+                        y: { title: { display: true, text: "Value" } }
                     }
                 }
+            }));
+        } else {
+            // MULTIPLE charts
+            for (const s of data) {
+                const canvas = document.createElement("canvas");
+                canvas.style.marginBottom = "40px";
+                container.appendChild(canvas);
+
+                const ctx = canvas.getContext("2d");
+                charts.push(new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        datasets: [{
+                            label: `${s.device_id}:${s.key}`,
+                            data: s.points.map(p => ({ x: p.t, y: p.v })),
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: { type: "linear", title: { display: true, text: "Time (s)" } },
+                            y: { title: { display: true, text: "Value" } }
+                        }
+                    }
+                }));
             }
-        });
-    } else {
-        chart = new Chart(ctx, {
-            type: "scatter",
-            data: {
-                datasets: [{
-                    label: "XY",
-                    data: data
-                }]
-            },
-            options: {
-                scales: {
-                    x: { title: { display: true, text: "X" } },
-                    y: { title: { display: true, text: "Y" } }
-                }
-            }
-        });
+        }
+        return;
     }
+
+    // XY mode (unchanged)
+    const canvas = document.createElement("canvas");
+    document.getElementById("chartContainer").appendChild(canvas);
+
+    charts.push(new Chart(canvas.getContext("2d"), {
+        type: "scatter",
+        data: {
+            datasets: [{ label: "XY", data }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: "X" } },
+                y: { title: { display: true, text: "Y" } }
+            }
+        }
+    }));
 }
+
 
 function exportCSV() {
     if (!lastSeries.length) return;
