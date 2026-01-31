@@ -71,7 +71,7 @@ def register(app):
         if not isinstance(key_values, dict) or not key_values:
             return jsonify({"error": "no keyValues"}), 400
 
-        report_id = data.get("report_id") or uuid.uuid4().hex
+        report_id = data.get("report_id", "")
 
         rows = []
         for key, value in key_values.items():
