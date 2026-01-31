@@ -109,6 +109,11 @@ async function loadPlot() {
     });
 
     const data = await res.json();
+    if (!Array.isArray(data)) {
+        console.error("Expected array, got:", data);
+        alert("Backend error – see console");
+    return;
+}
     renderChart(mode, data);
 }
 
