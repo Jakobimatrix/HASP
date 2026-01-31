@@ -1,6 +1,6 @@
 import sqlite3
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable, Optional, Tuple
 
 from utilities.time_utils import Timestamp, get_timestamp
 
