@@ -33,29 +33,34 @@ def register(app):
     @app.route("/api/data", methods=["POST"])
     @login_required
     def api_data():
-        data = request.get_json(force=True)
+        try:
+            data = request.get_json(force=True)
 
-        mode = data["mode"]
-        device_id = data["device_id"]
+            mode = data["mode"]
+            device_id = data["device_id"]
 
-        if mode == "independent":
-            key = data["key"]
-            rows = get_time_series(device_id, key)
-            return jsonify([
-                {
-                    "t": r["ts_sec"] + r["ts_nsec"] / 1e9,
-                    "v": r["value"],
-                }
-                for r in rows
-            ])
+            if mode == "independent":
+                key = data["key"]
+                rows = get_time_series(device_id, key)
+                return jsonify([
+                    {
+                        "t": r["ts_sec"] + r["ts_nsec"] / 1e9,
+                        "v": r["value"],
+                    }
+                    for r in rows
+                ])
 
-        if mode == "xy":
-            x_key = data["x_key"]
-            y_key = data["y_key"]
-            rows = get_xy_series(device_id, x_key, y_key)
-            return jsonify([
-                {"x": r["x"], "y": r["y"]}
-                for r in rows
-            ])
+            if mode == "xy":
+                x_key = data["x_key"]
+                y_key = data["y_key"]
+                rows = get_xy_series(device_id, x_key, y_key)
+                return jsonify([
+                    {"x": r["x"], "y": r["y"]}
+                    for r in rows
+                ])
 
-        return jsonify({"error": "invalid mode"}), 400
+            return jsonify({"error": "invalid mode"}), 400
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 500
