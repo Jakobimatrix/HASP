@@ -35,9 +35,7 @@ def register(app):
     def api_data():
         try:
             data = request.get_json(force=True)
-
             mode = data["mode"]
-            device_id = data["device_id"]
 
             if mode == "independent":
                 device_ids = data["device_ids"]
@@ -62,10 +60,11 @@ def register(app):
 
                 return jsonify(result)
 
-
             if mode == "xy":
+                device_id = data["device_id"]
                 x_key = data["x_key"]
                 y_key = data["y_key"]
+
                 rows = get_xy_series(device_id, x_key, y_key)
                 return jsonify([
                     {"x": r[0], "y": r[1]}
@@ -73,6 +72,7 @@ def register(app):
                 ])
 
             return jsonify({"error": "invalid mode"}), 400
+
         except Exception as e:
             import traceback
             traceback.print_exc()
