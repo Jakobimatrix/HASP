@@ -26,10 +26,10 @@ def report_state():
         start_ok = (requested_state_start is None) or (requested_state_start == 0) or (now >= requested_state_start)
         expire_ok = (requested_state_expire is None) or (requested_state_expire == 0) or (now <= requested_state_expire)
         if start_ok and expire_ok:
-            return jsonify({'state': requested_state})
+            return jsonify({'state': requested_state}), 200
         # If not valid, clear requested_state
         state_db.update_requested_state(device_id, None, None, None)
-    return jsonify({'state': current_state})
+    return jsonify({'state': current_state}), 200
 
 @bp.route('/state', methods=['GET'])
 def get_state():
