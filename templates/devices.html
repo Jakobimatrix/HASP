@@ -12,12 +12,20 @@
             <th>ID</th>
             <th>Name</th>
             <th>Last Connection</th>
+            <th>Current State</th>
         </tr>
         {% for d in devices %}
         <tr>
             <td>{{ d.id }}</td>
             <td>{{ d.name }}</td>
             <td>{{ d.last_seen }}</td>
+            <td>
+                {% if d.current_state %}
+                    <a href="{{ url_for('change_state.change_state_view', device_id=d.id) }}">{{ d.current_state }}</a>
+                {% else %}
+                    --
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>

@@ -3,14 +3,14 @@ import db.state as state_db
 import time
 import json
 
-bp = Blueprint('state_gui', __name__, url_prefix='/state')
+bp = Blueprint('change_state', __name__, url_prefix='/change_state')
 
 @bp.route('/<device_id>', methods=['GET', 'POST'])
-def state_view(device_id):
+def change_state_view(device_id):
     row = state_db.get_state(device_id)
     if not row:
         flash('Device not found', 'error')
-        return render_template('state.html', device_id=device_id, possible_states=[], current_state=None, requested_state=None, requested_state_start=None, requested_state_expire=None, save_dates=False)
+        return render_template('change_state.html', device_id=device_id, possible_states=[], current_state=None, requested_state=None, requested_state_start=None, requested_state_expire=None, save_dates=False)
 
     possible_states = row.get('possible_states', [])
     current_state = row.get('current_state')
@@ -31,11 +31,11 @@ def state_view(device_id):
             else:
                 state_db.update_requested_state(device_id, new_state, None, None)
             flash('Requested state updated.', 'success')
-            return redirect(url_for('state_gui.state_view', device_id=device_id))
+            return redirect(url_for('change_state.change_state_view', device_id=device_id))
         else:
             flash('Invalid state selected.', 'error')
 
-    return render_template('state.html',
+    return render_template('change_state.html',
         device_id=device_id,
         possible_states=possible_states,
         current_state=current_state,

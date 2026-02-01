@@ -1,5 +1,6 @@
 from flask import render_template
 from db.devices import get_all_devices
+from db.state import get_state
 from datetime import datetime
 from gui import login_required
 
@@ -12,10 +13,13 @@ def register(app):
 
         devices = []
         for dev_id, name, last_seen in raw_devices:
+            state_row = get_state(dev_id)
+            current_state = state_row["current_state"] if state_row and state_row.get("current_state") else None
             devices.append({
                 "id": dev_id,
                 "name": name,
-                "last_seen": datetime.fromtimestamp(last_seen).strftime("%Y-%m-%d %H:%M:%S")
+                "last_seen": datetime.fromtimestamp(last_seen).strftime("%Y-%m-%d %H:%M:%S"),
+                "current_state": current_state
             })
 
         return render_template("devices.html", devices=devices)
