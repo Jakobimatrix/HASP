@@ -10,10 +10,10 @@ DB_FILE = Path(__file__).parent / "users.db"
 def get_connection():
     return sqlite3.connect(DB_FILE)
 
-def init_user_db():
+def init_db():
     """Initialize the database schema."""
     with get_connection() as con:
-        con.executescript((Path(__file__).parent / "user_schema.sql").read_text())
+        con.executescript((Path(__file__).parent / "schema_user.sql").read_text())
 
 def verify_user(username: str, password: str) -> bool:
     """Check if the given password matches the stored password for the username."""

@@ -10,7 +10,7 @@ DB_FILE = Path(__file__).parent / "device_data.db"
 def get_connection():
     return sqlite3.connect(DB_FILE)
 
-def init_device_data_db():
+def init_db():
     with get_connection() as con:
         con.executescript((Path(__file__).parent / "schema_device_data.sql").read_text())
 
