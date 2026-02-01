@@ -76,7 +76,7 @@ def statemachine():
         "possible_states": STATES
     }
 
-    response_json, response_time_ms = post_payload(payload, "state")
+    response_json, response_time_ms = post_payload(payload, "post/state")
     if not response_json:
         return None
 

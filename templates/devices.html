@@ -21,7 +21,7 @@
             <td>{{ d.last_seen }}</td>
             <td>
                 {% if d.current_state %}
-                    <a href="{{ url_for('change_state.change_state_view', device_id=d.id) }}">{{ d.current_state }}</a>
+                    <a href="{{ url_for('change_state_view', device_id=d.id) }}">{{ d.current_state }}</a>
                 {% else %}
                     --
                 {% endif %}
