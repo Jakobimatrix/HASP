@@ -1,6 +1,7 @@
 import sqlite3
 from pathlib import Path
-import time
+
+from utilities.time_utils import Timestamp, get_timestamp
 
 
 DB_FILE = Path(__file__).parent / "devices.db"
@@ -13,17 +14,19 @@ def init_db():
         con.executescript((Path(__file__).parent / "schema_devices.sql").read_text())
 
 def add_device(device_id, name, definition):
+    timestamp = get_timestamp()
     with get_connection() as con:
         con.execute(
             "INSERT INTO devices (id, name, definition, last_seen) VALUES (?, ?, ?, ?)",
-            (device_id, name, definition, int(time.time()))
+            (device_id, name, definition, timestamp.seconds)
         )
 
 def update_last_seen(device_id):
+    timestamp = get_timestamp()
     with get_connection() as con:
         con.execute(
             "UPDATE devices SET last_seen = ? WHERE id = ?",
-            (int(time.time()), device_id)
+            (timestamp.seconds, device_id)
         )
 
 def get_all_devices():

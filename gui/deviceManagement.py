@@ -15,6 +15,7 @@ def register(app):
     @login_required
     def manage_device(device_id=None):
         device = get_device(device_id)
+        device.last_seen = datetime.fromtimestamp(device.last_seen).strftime("%Y-%m-%d %H:%M:%S")
         if not device:
             flash("Device not found.", "danger")
             return redirect(url_for("devices"))

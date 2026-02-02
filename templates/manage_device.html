@@ -37,10 +37,7 @@
             <input type="text" name="new_name" class="form-control" placeholder="New device name" value="{{ device.name }}" required style="max-width: 250px;">
             <button type="submit" class="btn btn-primary">Rename Device</button>
         </form>
-        <form method="post" action="" class="mb-3" onsubmit="return confirm('Are you sure? All data will be deleted!');">
-            <input type="hidden" name="action" value="delete">
-            <button type="submit" class="btn btn-danger">Delete Device</button>
-        </form>
+        <hr>
         <form method="post" action="" class="mb-3 d-flex gap-2 align-items-center">
             <input type="hidden" name="action" value="merge">
             <select name="merge_device_id" class="form-select" required style="max-width: 300px;">
@@ -51,6 +48,7 @@
             </select>
             <button type="submit" class="btn btn-warning" onclick="return confirm('Replace selected device with this device? This will merge all data from both devices and delete the other device.');">Merge Device</button>
         </form>
+        <hr>
         <form method="post" action="" class="mb-3">
             <p>
                 If you want to reset this device now and re-register it with the same ID, click the button below. 
@@ -59,6 +57,11 @@
             </p>
             <input type="hidden" name="action" value="reset">
             <button type="submit" class="btn btn-secondary">Reset Device</button>
+        </form>
+        <hr>
+        <form method="post" action="" class="mb-3" onsubmit="return confirm('Are you sure? All data will be deleted!');">
+            <input type="hidden" name="action" value="delete">
+            <button type="submit" class="btn btn-danger">Delete Device</button>
         </form>
     </div>
 </div>
