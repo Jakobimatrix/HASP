@@ -11,7 +11,7 @@ from utilities.reset_cache import set_reset_device
 
 def register(app):
 
-    @app.route("/devices/manage/<device_id>", endpoint="devices/manage", methods=["GET", "POST"])
+    @app.route("/manageDevice/<device_id>", endpoint="devices/manage", methods=["GET", "POST"])
     @login_required
     def manage_device(device_id=None):
         device = get_device(device_id)
@@ -32,7 +32,7 @@ def register(app):
                 if new_name:
                     update_device_name(device_id, new_name)
                     flash("Device renamed.", "success")
-                    return redirect(url_for("devices.manage", device_id=device_id))
+                    return redirect(url_for("manageDevice", device_id=device_id))
             elif action == "delete":
                 delete_device(device_id)
                 delete_state(device_id)
@@ -46,7 +46,7 @@ def register(app):
                     delete_device(merge_id)
                     delete_state(merge_id)
                     flash(f"Merged device {merge_id} into {device_id}.", "success")
-                    return redirect(url_for("devices.manage", device_id=device_id))
+                    return redirect(url_for("manageDevice", device_id=device_id))
             elif action == "reset":
                 # Set reset_mode for UI, set global cache
                 set_reset_device(device_id)

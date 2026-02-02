@@ -44,7 +44,7 @@
                 {% endif %}
             </td>
             <td>
-                <a href="{{ url_for('devices.manage', device_id=d.id) }}" class="btn btn-warning btn-sm">Manage</a>
+                <a href="{{ url_for('manageDevice', device_id=d.id) }}" class="btn btn-warning btn-sm">Manage</a>
             </td>
         </tr>
         {% endfor %}
