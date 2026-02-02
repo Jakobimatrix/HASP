@@ -51,26 +51,31 @@ def register(app):
         if not (device_id and current_state and possible_states):
             return jsonify({'error': 'Missing required fields'}), 400
 
-        # Save or update state in DB
-        state_db.set_state(device_id, current_state, possible_states)
-        # Get full state row
         row = state_db.get_state(device_id)
         now = int(time.time())
-        requested_state = row.get('requested_state')
-        requested_state_start = row.get('requested_state_start')
-        requested_state_expire = row.get('requested_state_expire')
+        requested_state = None
+        requested_state_start = None
+        requested_state_expire = None
 
-        if requested_state and requested_state in possible_states:
-            start_ok = (requested_state_start is None) or (requested_state_start == 0) or (now >= requested_state_start)
-            expire_ok = (requested_state_expire is None) or (requested_state_expire == 0) or (now <= requested_state_expire)
-            if start_ok and expire_ok:
-                return jsonify({'state': requested_state}), 200
+        if row:
+            requested_state = row.get('requested_state')
+            if requested_state
+                requested_state_start = row.get('requested_state_start')
+                requested_state_expire = row.get('requested_state_expire')
+                start_ok = (requested_state_start is None) or (requested_state_start == 0) or (now >= requested_state_start)
+                expire_ok = (requested_state_expire is None) or (requested_state_expire == 0) or (now <= requested_state_expire)
+                requested_state_is_not_current = requested_state != current_state
+                if not (start_ok and expire_ok and requested_state_is_not_current):
+                    requested_state = None
+                    requested_state_start = None
+                    requested_state_expire = None
 
-            # If not valid, clear requested_state
-            state_db.update_requested_state(device_id, None, None, None)
+        state_db.set_state(device_id, current_state, possible_states, requested_state, requested_state_start, requested_state_expire)
+
+        return_state = requested_state if requested_state in possible_states else current_state
 
         return jsonify({
-            'state': current_state,
+            'state': return_state,
             'debug': {
                 'requested_state': requested_state,
                 'requested_state_start': requested_state_start,

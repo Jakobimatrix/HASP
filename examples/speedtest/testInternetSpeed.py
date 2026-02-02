@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Designed to be run periodically (e.g., every 20 minutes by crontab) to test internet speed
+# and report results to a HASP server with a state machine.
+
 import time
 import requests
 import speedtest
@@ -55,7 +58,9 @@ def run_speedtest(responsetime_ms):
         }
     }
 
-    post_payload(payload, "reportValues")
+    response, _ = post_payload(payload, "reportValues")
+    if not response:
+        print("[ERROR] Could not report values to HASP server.")
 
 
 def saveRequestedState(requested_state):
@@ -68,6 +73,17 @@ def saveRequestedState(requested_state):
                     f.write(f"GLOBAL_CURRENT_STATE = \"{requested_state}\"\n")
                 else:
                     f.write(line)
+        # Since this script is designed to run not that often (every 20 Minutes or so)
+        # tell the HASP server now that we accepted the new state 
+        # instead of waiting for the next run.
+        payload = {
+            "device_id": ID,
+            "current_state": requested_state,
+            "possible_states": STATES
+        }
+        response_json, _ = post_payload(payload, "post/state")
+        if not response_json:
+            print("[ERROR] Could not inform HASP server about new current state.")
 
 def statemachine():
     payload = {
@@ -78,17 +94,19 @@ def statemachine():
 
     response_json, response_time_ms = post_payload(payload, "post/state")
     if not response_json:
+        print("[ERROR] No response from server for state machine.")
         return None
 
     if not 'state' in response_json:
+        print("[ERROR] Invalid response from server for state machine:", response_json)
         return None
 
     requested_state = response_json['state']
     saveRequestedState(requested_state)
- 
+
     if(requested_state == "paused"):
         return None
-    
+
     return response_time_ms
 
 def run():

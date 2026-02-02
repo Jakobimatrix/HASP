@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+# Register the speedtest device with the HASP server
+# Call that script once before running the testInternetSpeed.py script.
 import requests
 import json
 
@@ -8,7 +11,7 @@ payload = {
     "name": DEVICE_NAME,
     "device_id": ID,
     "definition": json.dumps({
-        "uses": ["registerDevice", "reportValues", "state"],
+        "uses": ["api/reportValues", "api/post/state"],
         "info": "Speedtest device reporting internet speed and response time.",
         "Device": "Server"
     })
