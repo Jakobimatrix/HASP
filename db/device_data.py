@@ -107,6 +107,31 @@ def get_all_keys(device_ids: Optional[list[str]] = None):
             )
         return [r[0] for r in rows]
 
+def get_all_report_ids(device_ids: Optional[list[str]] = None):
+    with get_connection() as con:
+        if device_ids:
+            placeholders = ",".join("?" * len(device_ids))
+            rows = con.execute(
+                f"""
+                SELECT DISTINCT report_id
+                FROM measurements
+                WHERE device_id IN ({placeholders})
+                  AND report_id IS NOT NULL
+                  AND report_id != ''
+                ORDER BY report_id
+                """,
+                device_ids,
+            )
+        else:
+            rows = con.execute(
+                """
+                SELECT DISTINCT report_id FROM measurements
+                WHERE report_id IS NOT NULL AND report_id != ''
+                ORDER BY report_id
+                """
+            )
+        return [r[0] for r in rows]
+
 def get_time_series(device_id: str, key: str):
     with get_connection() as con:
         return con.execute(
@@ -131,11 +156,24 @@ def get_xy_series(device_id: str, x_key: str, y_key: str):
             FROM measurements x
             JOIN measurements y
               ON x.device_id = y.device_id
-             AND x.report_id = y.report_id
             WHERE x.device_id = ?
               AND x.key = ?
               AND y.key = ?
-              AND x.report_id IS NOT NULL
             """,
             (device_id, x_key, y_key),
         ).fetchall()
+
+def get_time_series_via_report_id(report_id: str):
+    with get_connection() as con:
+        return con.execute(
+            """
+            SELECT ts_sec, ts_nsec
+                   COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                   device_id
+            FROM measurements
+            WHERE report_id = ?
+            ORDER BY ts_sec, ts_nsec
+            """,
+            (report_id, key),
+        ).fetchall()
+
