@@ -52,19 +52,14 @@
             </select>
         </div>
         <div class="ms-3">
-            <label for="sourceSelect" class="form-label">Data Source:</label>
-            <select id="sourceSelect" class="form-select mb-3">
-                <option value="device_id">Select Data by Device</option>
+            <select id="sourceSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                <option value="device_id" selected>Select Data by Device</option>
                 <option value="report_id">Select Data by Report ID</option>
             </select>
         </div>
     </div>
     <hr>
     <div id="chartContainer"></div>
-    <div class="mt-4 d-flex flex-column flex-md-row gap-2">
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to index</a>
-        <a href="{{ url_for('devices') }}" class="btn btn-info">Back to devices</a>
-    </div>
 </div>
 <script>
 let chart = null;
