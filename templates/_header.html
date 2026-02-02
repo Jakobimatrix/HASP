@@ -1,0 +1,41 @@
+{# _header.html - Main header and menu #}
+{% macro header(current_user=None, is_admin=False) %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">HASP</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="devicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Devices
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="devicesDropdown">
+            <li><a class="dropdown-item" href="/devices">Devices List</a></li>
+            <li><a class="dropdown-item" href="/visualize">Data</a></li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            User
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="userDropdown">
+            {% if current_user %}
+              <li><a class="dropdown-item" href="/user/edit/{{ current_user }}">Change Password</a></li>
+            {% endif %}
+            {% if is_admin %}
+              <li><a class="dropdown-item" href="/user/list">User List</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+      {% if current_user %}
+        <span class="navbar-text text-white me-2">Logged in as {{ current_user }}</span>
+        <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+{% endmacro %}

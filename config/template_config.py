@@ -16,4 +16,5 @@ SSL_INFO = "/C=DE/ST=State/L=city/O=organisation/OU=IT-Department/CN=HomeAssista
 # Systemd service controlling the Flask app
 SERVICE_NAME = "home-assistant-flask.service"
 
-
+VERSION = "0.1"
+GIT_URL = "https://github.com/Jakobimatrix/HASP"

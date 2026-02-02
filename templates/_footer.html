@@ -1,0 +1,10 @@
+{# _footer.html - Main footer #}
+{% macro footer(version, git_url) %}
+<footer class="bg-light text-center text-muted py-2 mt-4 border-top">
+  <div class="container">
+    <small>
+      Version {{ version }} &middot; <a href="{{ git_url }}" target="_blank">GitHub Repository</a>
+    </small>
+  </div>
+</footer>
+{% endmacro %}

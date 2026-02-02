@@ -1,41 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Visualize Data</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         select { min-width: 300px; }
     </style>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}">
 </head>
 <body>
-
-<h1>Visualize Device Data</h1>
-
-<h3>1. Select Device(s)</h3>
-<select id="deviceSelect" multiple size="6">
-    {% for id, name, _ in devices %}
-    <option value="{{ id }}">{{ name }} ({{ id }})</option>
-    {% endfor %}
-</select>
-
-<h3>2. Select Visualization Mode</h3>
-<select id="modeSelect">
-    <option value="independent">Time series (Y vs Time)</option>
-    <option value="xy">XY plot (X vs Y)</option>
-</select>
-
-<h3>3. Select Key(s)</h3>
-<div id="keySelectors"></div>
-
-<br>
-<button onclick="loadPlot()">Plot</button>
-<button onclick="exportCSV()">Export CSV</button>
-
-<hr>
-
-<div id="chartContainer"></div>
-
+{% from '_header.html' import header %}
+{% from '_footer.html' import footer %}
+{{ header(current_user=current_user, is_admin=is_admin) }}
+<div class="container mt-4">
+    <h1 class="mb-4">Visualize Device Data</h1>
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 mb-3 mb-md-0">
+            <h5>1. Select Device(s)</h5>
+            <select id="deviceSelect" class="form-select" multiple size="6">
+                {% for id, name, _ in devices %}
+                <option value="{{ id }}">{{ name }} ({{ id }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <h5>2. Select Visualization Mode</h5>
+            <select id="modeSelect" class="form-select mb-3">
+                <option value="independent">Time series (Y vs Time)</option>
+                <option value="xy">XY plot (X vs Y)</option>
+            </select>
+            <h5>3. Select Key(s)</h5>
+            <div id="keySelectors"></div>
+        </div>
+    </div>
+    <div class="mb-3 d-flex gap-2 flex-wrap">
+        <button onclick="loadPlot()" class="btn btn-primary">Plot</button>
+        <button onclick="exportCSV()" class="btn btn-secondary">Export CSV</button>
+    </div>
+    <hr>
+    <div id="chartContainer"></div>
+    <div class="mt-4 d-flex flex-column flex-md-row gap-2">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to index</a>
+        <a href="{{ url_for('devices') }}" class="btn btn-info">Back to devices</a>
+    </div>
+</div>
 <script>
 let chart = null;
 let lastSeries = [];
@@ -233,8 +244,7 @@ function exportCSV() {
 loadKeys();
 </script>
 
-<p><a href="{{ url_for('index') }}">Back to index</a></p>
-<p><a href="{{ url_for('devices') }}">Back to devices</a></p>
-
+</div>
+{{ footer(version=version, git_url=git_url) }}
 </body>
 </html>

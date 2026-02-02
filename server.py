@@ -6,8 +6,7 @@ import importlib
 import pkgutil
 import hashlib
 
-from config.config import SSL_CERT_FILE
-from config.config import FLASK_SECRET
+from config.config import SSL_CERT_FILE, FLASK_SECRET, VERSION, GIT_URL
 from db.devices import init_db as init_devices_db
 from db.user import init_db as init_user_db
 from db.device_data import init_db as init_device_data_db
@@ -28,7 +27,27 @@ init_user_db()
 init_device_data_db()
 init_state_db()
 
+
 app = Flask(__name__)
+
+# Context processor to inject user and version info into all templates
+from flask import session
+@app.context_processor
+def inject_globals():
+    username = session.get("username")
+    is_admin = False
+    if username:
+        try:
+            from db.user import is_current_user_in_group
+            is_admin = is_current_user_in_group("admin")
+        except Exception:
+            is_admin = False
+    return dict(
+        current_user=username,
+        is_admin=is_admin,
+        version=VERSION,
+        git_url=GIT_URL
+    )
 
 now = datetime.now()
 shifted = now - timedelta(hours=3)

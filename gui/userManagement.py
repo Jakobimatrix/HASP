@@ -72,7 +72,12 @@ def deleteUser(username):
 @user_bp.route("/edit/<username>", methods=["GET", "POST"], endpoint="edit")
 def edit(username):
     current_user = session.get("username")
-    if not current_user or not is_current_user_in_group("admin"):
+    is_admin = is_current_user_in_group("admin")
+    if not current_user:
+        return "Access denied.", 403
+
+    # Only admin can edit other users; normal users can only edit themselves
+    if not is_admin and username != current_user:
         return "Access denied.", 403
 
     # Get current user data
@@ -85,22 +90,30 @@ def edit(username):
     if request.method == "POST":
         password1 = request.form.get("password", "")
         password2 = request.form.get("password2", "")
-        groups_input = request.form.get("groups", "").strip()
-        new_groups = [g.strip() for g in groups_input.split(",") if g.strip()]
+        # Only allow group changes for admin
+        if is_admin:
+            groups_input = request.form.get("groups", "").strip()
+            new_groups = [g.strip() for g in groups_input.split(",") if g.strip()]
+        else:
+            new_groups = None
 
         if password1 or password2:
             if password1 != password2:
                 message = "Passwords do not match."
-                return render_template("editUser.html", username=username, groups=new_groups, message=message)
+                return render_template("editUser.html", username=username, groups=groups, message=message, is_admin=is_admin)
             else:
                 password = password1
         else:
             password = None
 
         update_user(username, password, new_groups)
-        return redirect(url_for("user.list"))
+        # If admin, redirect to user list; else, redirect to index
+        if is_admin:
+            return redirect(url_for("user.list"))
+        else:
+            return redirect(url_for("index"))
 
-    return render_template("editUser.html", username=username, groups=groups)
+    return render_template("editUser.html", username=username, groups=groups, is_admin=is_admin)
 
 
 def register(app):
