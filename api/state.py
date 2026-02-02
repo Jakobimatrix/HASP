@@ -59,7 +59,7 @@ def register(app):
 
         if row:
             requested_state = row.get('requested_state')
-            if requested_state
+            if requested_state:
                 requested_state_start = row.get('requested_state_start')
                 requested_state_expire = row.get('requested_state_expire')
                 start_ok = (requested_state_start is None) or (requested_state_start == 0) or (now >= requested_state_start)
