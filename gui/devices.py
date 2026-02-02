@@ -24,4 +24,14 @@ def register(app):
                 "requested_state": requested_state
             })
 
+        from flask import request, render_template_string
+        if request.args.get('ajax') == '1':
+            # Only return the table body for AJAX refresh using the macro
+            return render_template_string(
+                """
+                {% from '_devices_table.html' import devices_table %}
+                {{ devices_table(devices) }}
+                """,
+                devices=devices
+            )
         return render_template("devices.html", devices=devices)

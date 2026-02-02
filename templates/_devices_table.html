@@ -1,0 +1,36 @@
+{% macro devices_table(devices) %}
+<table class="table table-striped table-bordered align-middle" id="devicesTable">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Last Connection</th>
+            <th>Current State</th>
+            <th>Requested State</th>
+        </tr>
+    </thead>
+    <tbody id="devicesTableBody">
+        {% for d in devices %}
+        <tr>
+            <td>{{ d.id }}</td>
+            <td>{{ d.name }}</td>
+            <td>{{ d.last_seen }}</td>
+            <td>
+                {% if d.current_state %}
+                    <a href="{{ url_for('change_state_view', device_id=d.id) }}" class="btn btn-outline-primary btn-sm">{{ d.current_state }}</a>
+                {% else %}
+                    --
+                {% endif %}
+            </td>
+            <td>
+                {% if d.requested_state %}
+                    <span class="badge bg-info text-dark">{{ d.requested_state }}</span>
+                {% else %}
+                    --
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
