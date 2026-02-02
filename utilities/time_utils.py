@@ -13,5 +13,5 @@ def get_timestamp() -> Timestamp:
     unix_time_subsec = unix_time_ns % 1_000_000_000
     return Timestamp(unix_time_s, unix_time_subsec)
 
-def format_timestamp(ts: Timestamp) -> str:
-    return datetime.utcfromtimestamp(ts.seconds).strftime(TIME_FORMAT)
+def format_timestamp_seconds(seconds: int) -> str:
+    return datetime.utcfromtimestamp(seconds).strftime(TIME_FORMAT)
