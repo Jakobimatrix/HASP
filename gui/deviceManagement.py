@@ -11,7 +11,7 @@ from utilities.reset_cache import set_reset_device
 
 def register(app):
 
-    @app.route("/manageDevice/<device_id>", endpoint="devices/manage", methods=["GET", "POST"])
+    @app.route("/manageDevice/<device_id>", endpoint="manageDevice", methods=["GET", "POST"])
     @login_required
     def manage_device(device_id=None):
         device = get_device(device_id)
