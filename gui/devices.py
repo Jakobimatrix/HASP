@@ -15,11 +15,13 @@ def register(app):
         for dev_id, name, last_seen in raw_devices:
             state_row = get_state(dev_id)
             current_state = state_row["current_state"] if state_row and state_row.get("current_state") else None
+            requested_state = state_row["requested_state"] if state_row and state_row.get("requested_state") else None
             devices.append({
                 "id": dev_id,
                 "name": name,
                 "last_seen": datetime.fromtimestamp(last_seen).strftime("%Y-%m-%d %H:%M:%S"),
-                "current_state": current_state
+                "current_state": current_state,
+                "requested_state": requested_state
             })
 
         return render_template("devices.html", devices=devices)
