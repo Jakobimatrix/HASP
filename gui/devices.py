@@ -22,7 +22,7 @@ def register(app):
             devices.append({
                 "id": dev_id,
                 "name": name,
-                "last_seen": format_timestamp(last_seen)
+                "last_seen": format_timestamp(last_seen),
                 "current_state": current_state,
                 "requested_state": requested_state
             })
