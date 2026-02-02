@@ -12,6 +12,7 @@ payload = {
     "device_id": ID,
     "definition": json.dumps({
         "uses": ["api/reportValues", "api/post/state"],
+        "offers": [],
         "info": "Speedtest device reporting internet speed and response time.",
         "Device": "Server"
     })

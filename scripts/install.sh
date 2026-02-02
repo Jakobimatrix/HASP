@@ -43,6 +43,15 @@ echo "Setting up configuration..."
 cp -n "$HOME_DIR/HASP/config/template_config.py" "$HOME_DIR/HASP/config/config.py"
 nano "$HOME_DIR/HASP/config/config.py"
 
+echo "Do you want to install MQTT support? (y/n)"
+read -r mqtt_response
+if [[ "$mqtt_response" == "y" || "$mqtt_response" == "Y" ]]; then
+    echo "Installing MQTT dependencies..."
+    apt install mosquitto mosquitto-clients python3-paho-mqtt
+    systemctl enable mosquitto
+    systemctl start mosquitto
+    
+
 echo "Creating logs directory..."
 mkdir -p "$HOME_DIR/HASP/logs"
 

@@ -30,6 +30,10 @@
         <b>Reported Data Count:</b> {{ data_count }}
     </div>
     <hr>
+    <h2 class="mb-4">Device Controls:</h2>
+    {% from '_mqtt_controls.html' import mqtt_controls %}
+    {{ mqtt_controls(device.id, mqtt_topics, mqtt_last_values) }}
+    <hr>
     <div class="mb-4">
         <h4>Actions</h4>
         <form method="post" action="" class="mb-3 d-flex gap-2 align-items-center" id="renameForm">
@@ -66,3 +70,52 @@
     </div>
 </div>
 {{ footer(version=version, git_url=git_url) }}
+
+<script>
+function sendMQTTTopic(topicDiv) {
+    const topic = topicDiv.dataset.topic;
+    const values = {};
+    topicDiv.querySelectorAll(".mqtt-input, .mqtt-slider, .mqtt-select, .mqtt-checkbox").forEach(el => {
+        let value;
+        if(el.type === "checkbox") value = el.checked;
+        else if(el.type === "number") value = parseFloat(el.value);
+        else value = el.value;
+        values[el.dataset.key] = value;
+    });
+
+    fetch("/api/send/mqtt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            device_id: "{{ device.id }}",
+            topic: topic,
+            values: values
+        })
+    });
+}
+
+// Sliders <-> inputs sync
+document.querySelectorAll(".mqtt-slider").forEach(slider => {
+    const input = document.getElementById(slider.id.replace("_slider","_input"));
+    slider.addEventListener("input", e => input.value = slider.value);
+    slider.addEventListener("change", e => sendMQTTTopic(slider.closest(".mqtt-topic")));
+});
+
+document.querySelectorAll(".mqtt-input").forEach(input => {
+    const slider = document.getElementById(input.id.replace("_input","_slider"));
+    input.addEventListener("change", e => {
+        if(slider) slider.value = input.value;
+        sendMQTTTopic(input.closest(".mqtt-topic"));
+    });
+});
+
+// Dropdowns
+document.querySelectorAll(".mqtt-select").forEach(sel => {
+    sel.addEventListener("change", e => sendMQTTTopic(sel.closest(".mqtt-topic")));
+});
+
+// Checkboxes
+document.querySelectorAll(".mqtt-checkbox").forEach(cb => {
+    cb.addEventListener("change", e => sendMQTTTopic(cb.closest(".mqtt-topic")));
+});
+</script>
