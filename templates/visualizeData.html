@@ -25,6 +25,28 @@
     <div class="mb-3 d-flex gap-2 flex-wrap">
         <button onclick="loadPlot()" class="btn btn-primary">Plot</button>
         <button onclick="exportCSV()" class="btn btn-secondary">Export CSV</button>
+        <div class="form-check form-switch ms-3">
+            <input class="form-check-input" type="checkbox" id="removeOffsetToggle">
+            <label class="form-check-label" for="removeOffsetToggle">Remove offset (start x at 0)</label>
+        </div>
+            <div class="form-check form-switch ms-3">
+                <input class="form-check-input" type="checkbox" id="logYAxisToggle">
+                <label class="form-check-label" for="logYAxisToggle">Logarithmic Y axis</label>
+            </div>
+        <div class="ms-3">
+            <label for="xAxisMode" class="form-label">X axis:</label>
+            <select id="xAxisMode" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                <option value="date" selected>Date</option>
+                <option value="milliseconds">Milliseconds</option> 
+                <option value="seconds">Seconds</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
+                <option value="months">Months</option>
+                <option value="years">Years</option>
+            </select>
+        </div>
     </div>
     <hr>
     <div id="chartContainer"></div>
@@ -130,6 +152,86 @@ function renderChart(mode, data) {
     if (mode === "independent") {
         const split = document.getElementById("splitPlots").checked;
         const container = document.getElementById("chartContainer");
+        const removeOffset = document.getElementById("removeOffsetToggle").checked;
+        const xAxisMode = document.getElementById("xAxisMode").value;
+        const logYAxis = document.getElementById("logYAxisToggle").checked;
+
+        // Helper to transform x values
+        function transformX(points) {
+            if (!points.length) return points;
+            let offset = removeOffset ? points[0].t : 0;
+            return points.map(p => {
+                let x = p.t - offset;
+                switch (xAxisMode) {
+                    case "milliseconds":
+                        x = x * 1000;
+                        break;
+                    case "minutes":
+                        x = x / 60;
+                        break;
+                    case "hours":
+                        x = x / 3600;
+                        break;
+                    case "days":
+                        x = x / 86400;
+                        break;
+                    case "weeks":
+                        x = x / (86400 * 7);
+                        break;
+                    case "months":
+                        x = x / (86400 * 30.4375); // average month
+                        break;
+                    case "years":
+                        x = x / (86400 * 365.25); // average year
+                        break;
+                    case "date":
+                        x = new Date((p.t) * 1000); // p.t is seconds
+                        break;
+                }
+                return { x, y: p.v };
+            });
+        }
+
+        // x axis label
+        let xLabel = "Date";
+        switch (xAxisMode) {
+            case "seconds": xLabel = "Time (s)"; break;
+            case "milliseconds": xLabel = "Time (ms)"; break;
+            case "minutes": xLabel = "Time (min)"; break;
+            case "hours": xLabel = "Time (h)"; break;
+            case "days": xLabel = "Time (days)"; break;
+            case "weeks": xLabel = "Time (weeks)"; break;
+            case "months": xLabel = "Time (months)"; break;
+            case "years": xLabel = "Time (years)"; break;
+            case "date": xLabel = "Date"; break;
+        }
+
+        let xScale = {};
+        if (xAxisMode === "date") {
+            xScale = {
+                type: "time",
+                time: { unit: "minute", tooltipFormat: "yyyy-MM-dd HH:mm:ss" },
+                title: { display: true, text: xLabel }
+            };
+        } else {
+            xScale = {
+                type: "linear",
+                title: { display: true, text: xLabel }
+            };
+        }
+
+        let yScale = {};
+        if (logYAxis) {
+            yScale = {
+                type: "logarithmic",
+                title: { display: true, text: "Value (log)" }
+            };
+        } else {
+            yScale = {
+                type: "linear",
+                title: { display: true, text: "Value" }
+            };
+        }
 
         if (!split) {
             // ONE chart, many datasets
@@ -142,13 +244,13 @@ function renderChart(mode, data) {
                 data: {
                     datasets: data.map(s => ({
                         label: `${s.device_id}:${s.key}`,
-                        data: s.points.map(p => ({ x: p.t, y: p.v })),
+                        data: transformX(s.points),
                     }))
                 },
                 options: {
                     scales: {
-                        x: { type: "linear", title: { display: true, text: "Time (s)" } },
-                        y: { title: { display: true, text: "Value" } }
+                        x: xScale,
+                        y: yScale
                     }
                 }
             }));
@@ -165,13 +267,13 @@ function renderChart(mode, data) {
                     data: {
                         datasets: [{
                             label: `${s.device_id}:${s.key}`,
-                            data: s.points.map(p => ({ x: p.t, y: p.v })),
+                            data: transformX(s.points),
                         }]
                     },
                     options: {
                         scales: {
-                            x: { type: "linear", title: { display: true, text: "Time (s)" } },
-                            y: { title: { display: true, text: "Value" } }
+                            x: xScale,
+                            y: yScale
                         }
                     }
                 }));
