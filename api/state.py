@@ -68,12 +68,16 @@ def register(app):
 
             # If not valid, clear requested_state
             state_db.update_requested_state(device_id, None, None, None)
-        return jsonify({'state': current_state, 'debug':{}}), 200
-            'requested_state': requested_state,
-            'requested_state_start': requested_state_start,
-            'requested_state_expire': requested_state_expire,
-            'now': now
-        }}), 200
+
+        return jsonify({
+            'state': current_state,
+            'debug': {
+                'requested_state': requested_state,
+                'requested_state_start': requested_state_start,
+                'requested_state_expire': requested_state_expire,
+                'now': now
+            }
+        }), 200
 
     @app.route("/api/get/state", methods=["GET"])
     def get_state():

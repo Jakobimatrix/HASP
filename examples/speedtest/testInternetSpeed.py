@@ -22,17 +22,17 @@ def post_payload(payload: dict, endpoint):
         if not response:
             print(f"[ERROR] No response from server api {URL}{endpoint}", payload)
             return None, elapsed_ms
-        
+
         if response.status_code != 200:
             try:
                 print(f"[ERROR] {URL}{endpoint} Server response (statemachine non-JSON):", response.json(), payload)
             except ValueError:
                 print(f"[ERROR] {URL}{endpoint} Server response (statemachine non-JSON):", response.text, payload)
-            
+
             return None, elapsed_ms
 
         return response.json(), elapsed_ms
-        
+
     except Exception as e:
         print(f"[ERROR] Failed to send payload to {URL}{endpoint}: {e}, payload={payload}")
         return None, None
