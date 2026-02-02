@@ -30,7 +30,7 @@ def get_state(device_id):
         return result
     return None
 
-def set_state(device_id, current_state, possible_states, requested_state=None, requested_state_start=None, requested_state_expire=None):
+def set_state(device_id, current_state, possible_states, requested_state, requested_state_start, requested_state_expire):
     conn = get_db_connection()
     possible_states_json = json.dumps(possible_states)
     conn.execute('''INSERT INTO state (device_id, current_state, possible_states, requested_state, requested_state_start, requested_state_expire)
