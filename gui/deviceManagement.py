@@ -7,6 +7,7 @@ from db.devices import get_all_devices, get_device, update_device_name, delete_d
 from db.state import get_state, delete_state
 from db.device_data import count_device_data, delete_device_data, update_device_id
 from utilities.reset_cache import set_reset_device
+from utilities.time_utils import format_timestamp
 
 
 def register(app):
@@ -18,7 +19,7 @@ def register(app):
         if not device:
             flash("Device not found.", "danger")
             return redirect(url_for("devices"))
-        device["last_seen"] = datetime.fromtimestamp(device["last_seen"]).strftime("%Y-%m-%d %H:%M:%S")
+        device["last_seen"] = format_timestamp(device["last_seen"])
         state = get_state(device_id)
         data_count = count_device_data(device_id)
         # For merge dropdown: all other devices
