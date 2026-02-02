@@ -261,7 +261,26 @@ function renderChart(mode, data) {
         if (xAxisMode === "date") {
             xScale = {
                 type: "time",
-                time: { unit: "minute", tooltipFormat: "yyyy-MM-dd HH:mm:ss" },
+                time: {
+                    unit: "minute",
+                    tooltipFormat: "yyyy-MM-dd HH:mm:ss",
+                    displayFormats: {
+                        minute: "yyyy-MM-dd HH:mm",
+                        hour: "yyyy-MM-dd HH:mm",
+                        day: "yyyy-MM-dd HH:mm",
+                        week: "yyyy-MM-dd HH:mm",
+                        month: "yyyy-MM-dd HH:mm",
+                        year: "yyyy-MM-dd HH:mm"
+                    }
+                },
+                adapters: {
+                    date: {
+                        locale: {
+                            // Use 24-hour format for time
+                            format: "yyyy-MM-dd HH:mm"
+                        }
+                    }
+                },
                 title: { display: true, text: xLabel }
             };
         } else {
