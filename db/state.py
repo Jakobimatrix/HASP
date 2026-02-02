@@ -2,21 +2,15 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'state.db')
-SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema_state.sql')
+DB_FILE = Path(__file__).parent / "state.db"
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+def get_connection():
+    return sqlite3.connect(DB_FILE)
 
 def init_db():
-    with open(SCHEMA_PATH, 'r') as f:
-        schema = f.read()
-    conn = get_db_connection()
-    conn.executescript(schema)
-    conn.commit()
-    conn.close()
+    """Initialize the database schema."""
+    with get_connection() as con:
+        con.executescript((Path(__file__).parent / "schema_state.sql").read_text())
 
 def get_state(device_id):
     conn = get_db_connection()
