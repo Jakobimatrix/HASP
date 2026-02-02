@@ -6,8 +6,7 @@ from db.device_data import (
     get_all_report_ids,
     get_time_series,
     get_xy_series,
-    get_time_series_via_report_id,
-    get_xy_series_via_report_id,
+    get_time_series_via_report_id
 )
 
 def register(app):
