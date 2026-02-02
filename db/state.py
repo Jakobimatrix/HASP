@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '../state.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), 'state.db')
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema_state.sql')
 
 def get_db_connection():
