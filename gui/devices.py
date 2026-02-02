@@ -3,7 +3,7 @@ from db.devices import get_all_devices
 from db.state import get_state
 from datetime import datetime
 from gui import login_required
-from utilities.reset_cache import get_reset_device
+from utilities.cache import get_reset_device
 from utilities.time_utils import seconds2FormatedTime
 
 
