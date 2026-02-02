@@ -1,6 +1,6 @@
 import sqlite3
 import json
-import os
+from pathlib import Path
 
 DB_FILE = Path(__file__).parent / "state.db"
 
