@@ -7,11 +7,25 @@
             <th>Last Connection</th>
             <th>Current State</th>
             <th>Requested State</th>
+            <th>Actions</th>
         </tr>
     </thead>
+    {% if reset_device_id %}
+    <tbody>
+        <tr class="table-warning">
+            <td colspan="6" class="text-center">
+                <b>Device with ID "{{ reset_device_id }}" is in reset mode and will be re-registered on next connection.</b>
+            </td>
+        </tr>
+    </tbody>
+    {% endif %}
     <tbody id="devicesTableBody">
         {% for d in devices %}
+        {% if d.id == reset_device_id %}
+        <tr class="table-warning">
+        {% else %}
         <tr>
+        {% endif %}
             <td>{{ d.id }}</td>
             <td>{{ d.name }}</td>
             <td>{{ d.last_seen }}</td>
@@ -28,6 +42,9 @@
                 {% else %}
                     --
                 {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('devices/manage', device_id=d.id) }}" class="btn btn-warning btn-sm">Manage</a>
             </td>
         </tr>
         {% endfor %}

@@ -177,3 +177,15 @@ def get_time_series_via_report_id(report_id: str):
             (report_id, key),
         ).fetchall()
 
+def delete_device_data(device_id):
+    with get_connection() as con:
+        con.execute("DELETE FROM measurements WHERE device_id = ?", (device_id,))
+
+def count_device_data(device_id):
+    with get_connection() as con:
+        row = con.execute("SELECT COUNT(*) FROM measurements WHERE device_id = ?", (device_id,)).fetchone()
+        return row[0] if row else 0
+
+def update_device_id(old_id, new_id):
+    with get_connection() as con:
+        con.execute("UPDATE measurements SET device_id = ? WHERE device_id = ?", (new_id, old_id))

@@ -1,0 +1,65 @@
+{% from '_header.html' import header %}
+{% from '_footer.html' import footer %}
+{{ header(current_user=current_user, is_admin=is_admin, page_title="Manage Device") }}
+<div class="container mt-4">
+    <h1 class="mb-4">Manage Device: {{ device.id }}</h1>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h5>Device Info</h5>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><b>ID:</b> {{ device.id }}</li>
+                <li class="list-group-item"><b>Name:</b> {{ device.name }}</li>
+                <li class="list-group-item"><b>Last Seen:</b> {{ device.last_seen }}</li>
+                <li class="list-group-item"><b>Definition:</b> {{ device.definition }}</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h5>State Info</h5>
+            {% if state %}
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><b>Current State:</b> {{ state.current_state }}</li>
+                <li class="list-group-item"><b>Requested State:</b> {{ state.requested_state or '--' }}</li>
+                <li class="list-group-item"><b>Possible States:</b> {{ state.possible_states|join(', ') }}</li>
+            </ul>
+            {% else %}
+            <div class="alert alert-warning">No state info available.</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mb-3">
+        <b>Reported Data Count:</b> {{ data_count }}
+    </div>
+    <hr>
+    <div class="mb-4">
+        <h4>Actions</h4>
+        <form method="post" action="" class="mb-3 d-flex gap-2 align-items-center" id="renameForm">
+            <input type="hidden" name="action" value="rename">
+            <input type="text" name="new_name" class="form-control" placeholder="New device name" value="{{ device.name }}" required style="max-width: 250px;">
+            <button type="submit" class="btn btn-primary">Rename Device</button>
+        </form>
+        <form method="post" action="" class="mb-3" onsubmit="return confirm('Are you sure? All data will be deleted!');">
+            <input type="hidden" name="action" value="delete">
+            <button type="submit" class="btn btn-danger">Delete Device</button>
+        </form>
+        <form method="post" action="" class="mb-3 d-flex gap-2 align-items-center">
+            <input type="hidden" name="action" value="merge">
+            <select name="merge_device_id" class="form-select" required style="max-width: 300px;">
+                <option value="" disabled selected>Merge with device...</option>
+                {% for d in other_devices %}
+                    <option value="{{ d.id }}">{{ d.name }} ({{ d.id }})</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-warning" onclick="return confirm('Replace selected device with this device? This will merge all data from both devices and delete the other device.');">Merge Device</button>
+        </form>
+        <form method="post" action="" class="mb-3">
+            <p>
+                If you want to reset this device now and re-register it with the same ID, click the button below. 
+                The next device which registers will get the same ID. No date will be deleted.<br>
+                Either reset by hand, or if the device supports it, set the request state for this device in de Devices Pannel.
+            </p>
+            <input type="hidden" name="action" value="reset">
+            <button type="submit" class="btn btn-secondary">Reset Device</button>
+        </form>
+    </div>
+</div>
+{{ footer(version=version, git_url=git_url) }}

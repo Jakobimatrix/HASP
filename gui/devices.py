@@ -3,6 +3,7 @@ from db.devices import get_all_devices
 from db.state import get_state
 from datetime import datetime
 from gui import login_required
+from utilities.reset_cache import get_reset_device
 
 def register(app):
 
@@ -34,4 +35,4 @@ def register(app):
                 """,
                 devices=devices
             )
-        return render_template("devices.html", devices=devices)
+        return render_template("devices.html", devices=devices, reset_device_id=get_reset_device())

@@ -47,3 +47,7 @@ def update_requested_state(device_id, requested_state, requested_state_start=Non
                  (requested_state, requested_state_start, requested_state_expire, device_id))
     conn.commit()
     conn.close()
+
+def delete_state(device_id):
+    with get_connection() as con:
+        con.execute("DELETE FROM state WHERE device_id = ?", (device_id,))
