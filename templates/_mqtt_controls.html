@@ -1,4 +1,7 @@
-{% macro mqtt_controls(device_id, mqtt_topics, last_values) %}
+{% macro mqtt_controls(device_id, mqtt_topics, last_values, show_mqtt) %}
+{% if not show_mqtt %}
+    {% return %}
+{% endif %}
 <div class="mb-4">
     <h4>MQTT Controls</h4>
     {% for topic in mqtt_topics %}

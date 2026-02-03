@@ -32,7 +32,7 @@
     <hr>
     <h2 class="mb-4">Device Controls:</h2>
     {% from '_mqtt_controls.html' import mqtt_controls %}
-    {{ mqtt_controls(device.id, mqtt_topics, mqtt_last_values) }}
+    {{ mqtt_controls(device.id, mqtt_topics, mqtt_last_values, show_mqtt) }}
     <hr>
     <div class="mb-4">
         <h4>Actions</h4>

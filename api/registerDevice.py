@@ -2,7 +2,7 @@ from flask import request, jsonify
 import uuid
 from db.devices import add_device, device_exists, update_device_definition, get_device
 from db.mqtt import add_topic, add_topic_schema, get_topics_for_device, delete_topic, delete_topic_schema, delete_topic_schema_for_topic
-from utilities.reset_cache import get_reset_device, clear_reset_device
+from utilities.cache import get_reset_device, clear_reset_device
 
 
 def store_mqtt_info(device_id, mqtt_offers):

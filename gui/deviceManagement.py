@@ -7,9 +7,10 @@ from gui import login_required
 from db.devices import get_all_devices, get_device, update_device_name, delete_device
 from db.state import get_state, delete_state
 from db.device_data import count_device_data, delete_device_data, update_device_id
-from utilities.reset_cache import set_reset_device
+from utilities.cache import set_reset_device
 from utilities.time_utils import seconds2FormatedTime
 from db.mqtt import get_all_topics_for_device, get_latest_payload
+from utilities.cache import has_mqtt_broker_running
 
 
 def register(app):
@@ -56,21 +57,28 @@ def register(app):
                 set_reset_device(device_id)
                 return redirect(url_for("devices"))
 
+        show_mqtt = has_mqtt_broker_running()
+
         mqtt_topics = []
-        for topic_row in get_all_topics_for_device(device_id):
-            # topic_row = dict(id=..., name=..., keys=json_string)
-            keys = json.loads(topic_row["keys"])  # keys stored as JSON in DB
-            mqtt_topics.append({
-                "name": topic_row["name"],
-                "keys": keys
-            })
         last_values = {}
-        for topic in mqtt_topics:
-            latest = get_latest_payload(topic["name"])
-            if latest:
-                last_values[topic["name"]] = json.loads(latest["payload"])
-            else:
-                last_values[topic["name"]] = {}      
+        if show_mqtt:
+            for topic_row in get_all_topics_for_device(device_id):
+                # topic_row = dict(id=..., name=..., keys=json_string)
+                keys = json.loads(topic_row["keys"])  # keys stored as JSON in DB
+                mqtt_topics.append({
+                    "name": topic_row["name"],
+                    "keys": keys
+                })
+            
+            for topic in mqtt_topics:
+                latest = get_latest_payload(topic["name"])
+                if latest:
+                    last_values[topic["name"]] = json.loads(latest["payload"])
+                else:
+                    last_values[topic["name"]] = {}
+
+        if empty(mqtt_topics):
+            show_mqtt = False
 
         return render_template(
             "manage_device.html",
@@ -79,5 +87,6 @@ def register(app):
             data_count=data_count,
             other_devices=other_devices,
             mqtt_topics=mqtt_topics,
-            last_values=last_values
+            last_values=last_values,
+            show_mqtt
         )

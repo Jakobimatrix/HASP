@@ -2,6 +2,7 @@ from flask import request, jsonify
 import json
 import paho.mqtt.publish as publish
 from db.mqtt import add_topic_payload
+from utilities.cache import has_mqtt_broker_running
 
 @app.route("/api/send/mqtt", methods=["POST"])
 def send_mqtt():
@@ -13,6 +14,10 @@ def send_mqtt():
         "values": { "key1": value1, "key2": value2, ... }
     }
     """
+
+    if not has_mqtt_broker_running():
+        return jsonify({"error": "MQTT broker not running"}), 500
+
     data = request.get_json(force=True)
     device_id = data.get("device_id")
     topic = data.get("topic")
