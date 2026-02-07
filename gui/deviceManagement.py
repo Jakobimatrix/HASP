@@ -88,5 +88,5 @@ def register(app):
             other_devices=other_devices,
             mqtt_topics=mqtt_topics,
             last_values=last_values,
-            show_mqtt
+            show_mqtt=show_mqtt
         )
