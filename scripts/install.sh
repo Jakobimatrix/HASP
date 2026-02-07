@@ -67,7 +67,7 @@ echo "Installing systemd service..."
 cat <<EOT > /etc/systemd/system/hasp.service
 [Unit]
 Description=HASP Flask Server
-After=network.target
+After=network.target local-fs.target
 Wants=network.target
 
 [Service]
@@ -75,13 +75,10 @@ Type=simple
 User=root
 WorkingDirectory=$HOME_DIR/HASP
 ExecStartPre=/bin/sleep 2
-ExecStart=/usr/bin/python3 $HOME_DIR/HASP/server.py
+ExecStart=/usr/bin/python3 -u $HOME_DIR/HASP/server.py
 
 Restart=always
 RestartSec=5
-
-StandardOutput=append:$HOME_DIR/HASP/logs/flask.out.log
-StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
