@@ -1,7 +1,5 @@
 {% macro mqtt_controls(device_id, mqtt_topics, last_values, show_mqtt) %}
-{% if not show_mqtt %}
-    {% return %}
-{% endif %}
+{% if show_mqtt %}
 <div class="mb-4">
     <h4>MQTT Controls</h4>
     {% for topic in mqtt_topics %}
@@ -12,21 +10,21 @@
                 <div class="mb-2">
                     {% if key.value_type in ['float', 'int'] %}
                         <label for="{{ topic.name }}_{{ key.key_name }}">{{ key.key_name }}:</label>
-                        {% if key.min_value is defined and key.max_value is defined %}
+                        {% if key.min_value is not none and key.max_value is not none %}
                             <input type="range"
                                    id="{{ topic.name }}_{{ key.key_name }}_slider"
                                    min="{{ key.min_value }}"
                                    max="{{ key.max_value }}"
-                                   step="{{ 0.01 if key.value_type=='float' else 1 }}"
+                                   step="{{ 0.01 if key.value_type == 'float' else 1 }}"
                                    value="{{ value }}"
                                    class="mqtt-slider"
                                    data-key="{{ key.key_name }}">
                         {% endif %}
                         <input type="number"
                                id="{{ topic.name }}_{{ key.key_name }}_input"
-                               {% if key.min_value is defined %} min="{{ key.min_value }}" {% endif %}
-                               {% if key.max_value is defined %} max="{{ key.max_value }}" {% endif %}
-                               step="{{ 0.01 if key.value_type=='float' else 1 }}"
+                               {% if key.min_value is not none %} min="{{ key.min_value }}" {% endif %}
+                               {% if key.max_value is not none %} max="{{ key.max_value }}" {% endif %}
+                               step="{{ 0.01 if key.value_type == 'float' else 1 }}"
                                value="{{ value }}"
                                class="mqtt-input"
                                data-key="{{ key.key_name }}">
@@ -36,7 +34,9 @@
                                 class="mqtt-select"
                                 data-key="{{ key.key_name }}">
                             {% for option in key.enum_values %}
-                                <option value="{{ option }}" {% if option == value %}selected{% endif %}>{{ option }}</option>
+                                <option value="{{ option }}" {% if option == value %}selected{% endif %}>
+                                    {{ option }}
+                                </option>
                             {% endfor %}
                         </select>
                     {% elif key.value_type == 'bool' %}
@@ -54,4 +54,5 @@
         </div>
     {% endfor %}
 </div>
+{% endif %}
 {% endmacro %}
