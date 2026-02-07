@@ -41,8 +41,12 @@ def post_payload(payload: dict, endpoint):
         return None, None
 
 def run_speedtest(responsetime_ms):
-    st = speedtest.Speedtest(secure=True)
-    st.get_best_server()
+    try:
+        st = speedtest.Speedtest(secure=True)
+        st.get_best_server()
+    except Exception as e:
+        print(f"[ERROR] Failed to get best server for speedtest: {e}")
+        return
 
     download_speed = st.download() / 1_000_000  # Mbit/s
     upload_speed = st.upload() / 1_000_000      # Mbit/s

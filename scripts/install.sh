@@ -74,13 +74,14 @@ Wants=network.target
 Type=simple
 User=root
 WorkingDirectory=$HOME_DIR/HASP
+ExecStartPre=/bin/sleep 2
 ExecStart=/usr/bin/python3 $HOME_DIR/HASP/server.py
 
 Restart=always
 RestartSec=5
 
 StandardOutput=append:$HOME_DIR/HASP/logs/flask.out.log
-StandardError=append:$HOME_DIR/HASP/logs/flask.err.log
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
