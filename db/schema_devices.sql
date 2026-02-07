@@ -5,3 +5,5 @@ CREATE TABLE IF NOT EXISTS devices (
     last_seen INTEGER NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_devices_id
+ON devices(id);

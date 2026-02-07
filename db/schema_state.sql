@@ -6,3 +6,6 @@ CREATE TABLE IF NOT EXISTS state (
     requested_state_expire INTEGER,
     possible_states TEXT NOT NULL -- JSON-encoded list of states
 );
+
+CREATE INDEX IF NOT EXISTS idx_state_device
+ON state(device_id);

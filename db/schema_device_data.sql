@@ -13,3 +13,6 @@ CREATE TABLE IF NOT EXISTS measurements (
 
     PRIMARY KEY (device_id, ts_sec, ts_nsec, key)
 );
+
+CREATE INDEX IF NOT EXISTS idx_measurements_device_time
+ON measurements(device_id, ts_sec, ts_nsec);

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS topic_schema (
     min_value REAL,
     max_value REAL,
     enum_values TEXT,               -- JSON array for dropdowns, optional
+    UNIQUE(topic_id, key_name),
     FOREIGN KEY(topic_id) REFERENCES topics(id) ON DELETE CASCADE
 );
 
@@ -28,3 +29,12 @@ CREATE TABLE IF NOT EXISTS topic_payloads (
     payload TEXT NOT NULL,          -- JSON string
     FOREIGN KEY(topic_id) REFERENCES topics(id) ON DELETE CASCADE
 );
+
+CREATE INDEX IF NOT EXISTS idx_topics_device
+ON topics(device_id);
+
+CREATE INDEX IF NOT EXISTS idx_schema_topic
+ON topic_schema(topic_id);
+
+CREATE INDEX IF NOT EXISTS idx_payloads_topic_time
+ON topic_payloads(topic_id, time_seconds, time_nanoseconds);
