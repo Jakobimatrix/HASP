@@ -63,21 +63,20 @@ def register(app):
         last_values = {}
         if show_mqtt:
             for topic_row in get_all_topics_for_device(device_id):
-                # topic_row = dict(id=..., name=..., keys=json_string)
-                keys = json.loads(topic_row["keys"])  # keys stored as JSON in DB
                 mqtt_topics.append({
                     "name": topic_row["name"],
-                    "keys": keys
+                    "id": topic_row["id"],
+                    "keys": topic_row["keys"]
                 })
             
             for topic in mqtt_topics:
-                latest = get_latest_payload(topic["name"])
+                latest = get_latest_payload(topic["id"])
                 if latest:
                     last_values[topic["name"]] = json.loads(latest["payload"])
                 else:
                     last_values[topic["name"]] = {}
 
-        if empty(mqtt_topics):
+        if not mqtt_topics or len(mqtt_topics) == 0:
             show_mqtt = False
 
         return render_template(
