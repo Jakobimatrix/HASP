@@ -51,7 +51,7 @@ def register(app):
         if not (device_id and current_state and possible_states):
             return jsonify({'error': 'Missing required fields'}), 400
 
-        row = state_db.get_state(device_id)
+        row = state_db.getDeviceState(device_id)
         now = int(time.time())
         requested_state = None
         requested_state_start = None
@@ -70,7 +70,7 @@ def register(app):
                     requested_state_start = None
                     requested_state_expire = None
 
-        state_db.set_state(device_id, current_state, possible_states, requested_state, requested_state_start, requested_state_expire)
+        state_db.setDeviceState(device_id, current_state, possible_states, requested_state, requested_state_start, requested_state_expire)
 
         return_state = requested_state if requested_state in possible_states else current_state
 
@@ -85,11 +85,11 @@ def register(app):
         }), 200
 
     @app.route("/api/get/state", methods=["GET"])
-    def get_state():
+    def getDeviceState():
         device_id = request.args.get('device_id')
         if not device_id:
             return jsonify({'error': 'Missing device_id'}), 400
-        row = state_db.get_state(device_id)
+        row = state_db.getDeviceState(device_id)
         if not row:
             return jsonify({'error': 'Device not found'}), 404
         return jsonify(row)

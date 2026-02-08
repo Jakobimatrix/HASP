@@ -1,10 +1,10 @@
 from flask import render_template
-from db.devices import get_all_devices
-from db.state import get_state
+from db.devices import getAllDevices
+from db.state import getDeviceState
 from datetime import datetime
 from gui import login_required
-from utilities.cache import get_reset_device
-from utilities.time_utils import seconds2FormatedTime
+from utilities.cache import getResetDevice
+from utilities.time import seconds2FormatedTime
 
 
 def register(app):
@@ -12,11 +12,11 @@ def register(app):
     @app.route("/devices", endpoint="devices")
     @login_required
     def devices():
-        raw_devices = get_all_devices()
+        raw_devices = getAllDevices()
 
         devices = []
         for dev_id, name, last_seen in raw_devices:
-            state_row = get_state(dev_id)
+            state_row = getDeviceState(dev_id)
             current_state = state_row["current_state"] if state_row and state_row.get("current_state") else None
             requested_state = state_row["requested_state"] if state_row and state_row.get("requested_state") else None
             devices.append({
@@ -37,4 +37,4 @@ def register(app):
                 """,
                 devices=devices
             )
-        return render_template("devices.html", devices=devices, reset_device_id=get_reset_device())
+        return render_template("devices.html", devices=devices, reset_device_id=getResetDevice())

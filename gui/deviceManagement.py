@@ -4,13 +4,15 @@ from datetime import datetime
 import json
 
 from gui import login_required
-from db.devices import get_all_devices, get_device, update_device_name, delete_device
-from db.state import get_state, delete_state
-from db.device_data import count_device_data, delete_device_data, update_device_id
-from utilities.cache import set_reset_device
-from utilities.time_utils import seconds2FormatedTime
-from db.mqtt import get_all_topics_for_device, get_latest_payload
-from utilities.cache import has_mqtt_broker_running
+from db.devices import getAllDevices, getDevice, updateDeviceName, removeDevice
+from db.state import getDeviceState, deleteDeviceState
+from db.device_data import countDeviceData, removeDeviceData, updateDeviceId
+from utilities.cache import setResetDevice
+from utilities.time import seconds2FormatedTime
+from db.mqtt import getAllTopicsForDevice, getLatestPayload
+from utilities.cache import hasMqttBrokerRunning
+from utilities.removeFromDB import deleteDevice
+from utilities.updateDB import mergeDeviceId
 
 
 def register(app):
@@ -18,15 +20,15 @@ def register(app):
     @app.route("/manageDevice/<device_id>", endpoint="manageDevice", methods=["GET", "POST"])
     @login_required
     def manage_device(device_id=None):
-        device = get_device(device_id)
+        device = getDevice(device_id)
         if not device:
             flash("Device not found.", "danger")
             return redirect(url_for("devices"))
         device["last_seen"] = seconds2FormatedTime(device["last_seen"])
-        state = get_state(device_id)
-        data_count = count_device_data(device_id)
+        state = getDeviceState(device_id)
+        data_count = countDeviceData(device_id)
         # For merge dropdown: all other devices
-        all_devices = get_all_devices()
+        all_devices = getAllDevices()
         other_devices = [d for d in all_devices if d[0] != device_id]
         other_devices = [{"id": d[0], "name": d[1]} for d in other_devices]
 
@@ -35,34 +37,31 @@ def register(app):
             if action == "rename":
                 new_name = request.form.get("new_name")
                 if new_name:
-                    update_device_name(device_id, new_name)
+                    updateDeviceName(device_id, new_name)
                     flash("Device renamed.", "success")
                     return redirect(url_for("manageDevice", device_id=device_id))
             elif action == "delete":
-                delete_device(device_id)
-                delete_state(device_id)
-                delete_device_data(device_id)
+                deleteDevice(device_id)
                 flash("Device and all data deleted.", "success")
                 return redirect(url_for("devices"))
             elif action == "merge":
                 merge_id = request.form.get("merge_device_id")
                 if merge_id and merge_id != device_id:
-                    update_device_id(merge_id, device_id)
-                    delete_device(merge_id)
-                    delete_state(merge_id)
+                    mergeDeviceId(merge_id = merge_id, device_id = device_id)
                     flash(f"Merged device {merge_id} into {device_id}.", "success")
                     return redirect(url_for("manageDevice", device_id=device_id))
             elif action == "reset":
                 # Set reset_mode for UI, set global cache
-                set_reset_device(device_id)
+                setResetDevice(device_id)
                 return redirect(url_for("devices"))
 
-        show_mqtt = has_mqtt_broker_running()
+        show_mqtt = hasMqttBrokerRunning()
 
         mqtt_topics = []
         last_values = {}
         if show_mqtt:
-            for topic_row in get_all_topics_for_device(device_id):
+            #todo
+            for topic_row in getAllTopicsForDevice(device_id):
                 mqtt_topics.append({
                     "name": topic_row["name"],
                     "id": topic_row["id"],
@@ -70,7 +69,7 @@ def register(app):
                 })
             
             for topic in mqtt_topics:
-                latest = get_latest_payload(topic["id"])
+                latest = getLatestPayload(topic["id"])
                 if latest:
                     last_values[topic["name"]] = json.loads(latest["payload"])
                 else:

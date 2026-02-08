@@ -2,19 +2,19 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Iterable, Optional, Tuple
 
-from utilities.time_utils import Timestamp, get_timestamp
+from utilities.time import Timestamp, getTimeStamp
 
 
 DB_FILE = Path(__file__).parent / "device_data.db"
 
-def get_connection():
+def getDB():
     return sqlite3.connect(DB_FILE)
 
-def init_db():
-    with get_connection() as con:
+def initDB():
+    with getDB() as con:
         con.executescript((Path(__file__).parent / "schema_device_data.sql").read_text())
 
-def insert_measurement(
+def insertMeasurement(
     device_id: str,
     ts_sec: int,
     ts_nsec: int,
@@ -33,7 +33,7 @@ def insert_measurement(
     else:
         value_text = str(value)
 
-    with get_connection() as con:
+    with getDB() as con:
         con.execute(
             """
             INSERT INTO measurements
@@ -49,7 +49,7 @@ def insert_measurement(
             ),
         )
 
-def insert_measurements(
+def insertMeasurements(
     rows: Iterable[
         Tuple[str, int, int, str, Any, Optional[str]]
     ]
@@ -76,7 +76,7 @@ def insert_measurements(
             )
         )
 
-    with get_connection() as con:
+    with getDB() as con:
         con.executemany(
             """
             INSERT INTO measurements
@@ -88,8 +88,8 @@ def insert_measurements(
             prepared,
         )
 
-def get_all_keys(device_ids: Optional[list[str]] = None):
-    with get_connection() as con:
+def getAllKeys(device_ids: Optional[list[str]] = None):
+    with getDB() as con:
         if device_ids:
             placeholders = ",".join("?" * len(device_ids))
             rows = con.execute(
@@ -107,8 +107,8 @@ def get_all_keys(device_ids: Optional[list[str]] = None):
             )
         return [r[0] for r in rows]
 
-def get_all_report_ids(device_ids: Optional[list[str]] = None):
-    with get_connection() as con:
+def getAllReportIds(device_ids: Optional[list[str]] = None):
+    with getDB() as con:
         if device_ids:
             placeholders = ",".join("?" * len(device_ids))
             rows = con.execute(
@@ -132,8 +132,8 @@ def get_all_report_ids(device_ids: Optional[list[str]] = None):
             )
         return [r[0] for r in rows]
 
-def get_time_series(device_id: str, key: str):
-    with get_connection() as con:
+def getTimeSeries(device_id: str, key: str):
+    with getDB() as con:
         return con.execute(
             """
             SELECT ts_sec, ts_nsec,
@@ -146,8 +146,8 @@ def get_time_series(device_id: str, key: str):
             (device_id, key),
         ).fetchall()
 
-def get_xy_series(device_id: str, x_key: str, y_key: str):
-    with get_connection() as con:
+def getXYSeries(device_id: str, x_key: str, y_key: str):
+    with getDB() as con:
         return con.execute(
             """
             SELECT
@@ -163,8 +163,8 @@ def get_xy_series(device_id: str, x_key: str, y_key: str):
             (device_id, x_key, y_key),
         ).fetchall()
 
-def get_time_series_via_report_id(report_id: str):
-    with get_connection() as con:
+def getTimeSeriesViaReportId(report_id: str):
+    with getDB() as con:
         return con.execute(
             """
             SELECT ts_sec, ts_nsec
@@ -177,15 +177,15 @@ def get_time_series_via_report_id(report_id: str):
             (report_id, key),
         ).fetchall()
 
-def delete_device_data(device_id):
-    with get_connection() as con:
+def removeDeviceData(device_id):
+    with getDB() as con:
         con.execute("DELETE FROM measurements WHERE device_id = ?", (device_id,))
 
-def count_device_data(device_id):
-    with get_connection() as con:
+def countDeviceData(device_id):
+    with getDB() as con:
         row = con.execute("SELECT COUNT(*) FROM measurements WHERE device_id = ?", (device_id,)).fetchone()
         return row[0] if row else 0
 
-def update_device_id(old_id, new_id):
-    with get_connection() as con:
+def updateDeviceId(old_id, new_id):
+    with getDB() as con:
         con.execute("UPDATE measurements SET device_id = ? WHERE device_id = ?", (new_id, old_id))

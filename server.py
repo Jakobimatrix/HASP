@@ -8,11 +8,12 @@ import hashlib
 import logging
 
 from config.config import SSL_CERT_FILE, FLASK_SECRET, VERSION, GIT_URL
-from db.devices import init_db as init_devices_db
-from db.user import init_db as init_user_db
-from db.device_data import init_db as init_device_data_db
-from db.state import init_db as init_state_db
-from db.mqtt import init_db as init_mqtt_db
+from db.devices import initDB as init_devices_db
+from db.user import initDB as init_user_db
+from db.device_data import initDB as init_device_data_db
+from db.state import initDB as init_state_db
+from db.mqtt import initDB as init_mqtt_db
+from utilities.mqtt import startMqtt
 
 
 log = logging.getLogger("werkzeug")
@@ -45,8 +46,8 @@ def inject_globals():
     is_admin = False
     if username:
         try:
-            from db.user import is_current_user_in_group
-            is_admin = is_current_user_in_group("admin")
+            from db.user import isCurrentUserInGroup
+            is_admin = isCurrentUserInGroup("admin")
         except Exception:
             is_admin = False
     return dict(
@@ -64,6 +65,8 @@ app.secret_key = hashlib.sha256(combined).digest()
 
 auto_register(app, "api")
 auto_register(app, "gui")
+
+startMqtt()
 
 if __name__ == "__main__":
     app.run(

@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from db.devices import device_exists, update_last_seen
+from db.devices import deviceExists, updateLastSeen
 
 def register(app):
 
@@ -41,10 +41,10 @@ def register(app):
         data = request.get_json(force=True)
         device_id = data.get("device_id")
 
-        if not device_id or not device_exists(device_id):
+        if not device_id or not deviceExists(device_id):
             return jsonify({"error": "invalid device_id"}), 403
 
-        update_last_seen(device_id)
+        updateLastSeen(device_id)
 
         return jsonify({"status": "ok"})
 

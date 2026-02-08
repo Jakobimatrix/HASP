@@ -50,7 +50,7 @@
                     <option value="{{ d.id }}">{{ d.name }} ({{ d.id }})</option>
                 {% endfor %}
             </select>
-            <button type="submit" class="btn btn-warning" onclick="return confirm('Replace selected device with this device? This will merge all data from both devices and delete the other device.');">Merge Device</button>
+            <button type="submit" class="btn btn-warning" onclick="return confirm('Replace selected device with this device? This will merge all data from both devices and delete the selected device.');">Merge Device</button>
         </form>
         <hr>
         <form method="post" action="" class="mb-3">
@@ -64,6 +64,11 @@
         </form>
         <hr>
         <form method="post" action="" class="mb-3" onsubmit="return confirm('Are you sure? All data will be deleted!');">
+            <p>
+                This button deletes this device, removing it and everything that is connected to this device from the data bases.
+                If you want to reset a device and connect it again under the same ID, use <b>"Reset Device"</b> instead.
+                If you have missed the opportunety to reconnect a device with the same ID and hve been using the device some time under the new ID use <b>"Merge Device"</b> instead.
+            </p>
             <input type="hidden" name="action" value="delete">
             <button type="submit" class="btn btn-danger">Delete Device</button>
         </form>

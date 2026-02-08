@@ -1,7 +1,7 @@
 from flask import request, jsonify
-from db.devices import device_exists, update_last_seen
-from utilities.time_utils import Timestamp, get_timestamp
-from db.device_data import insert_measurements
+from db.devices import deviceExists, updateLastSeen
+from utilities.time import Timestamp, getTimeStamp
+from db.device_data import insertMeasurements
 
 def register(app):
 
@@ -54,17 +54,17 @@ def register(app):
         data = request.get_json(force=True)
         device_id = data.get("device_id")
 
-        if not device_id or not device_exists(device_id):
+        if not device_id or not deviceExists(device_id):
             return jsonify({"error": "invalid device_id"}), 403
 
-        update_last_seen(device_id)
+        updateLastSeen(device_id)
 
        # Timestamp handling
         if "s" in data:
             ts_sec = int(data["s"])
             ts_nsec = int(data.get("ns", 0))
         else:
-            ts = get_timestamp()
+            ts = getTimeStamp()
             ts_sec = ts.seconds
             ts_nsec = ts.nanoseconds
 
@@ -80,6 +80,6 @@ def register(app):
                 (device_id, ts_sec, ts_nsec, key, value, report_id)
             )
 
-        insert_measurements(rows)
+        insertMeasurements(rows)
         return jsonify({"status": "ok"}), 200
 

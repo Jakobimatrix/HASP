@@ -1,12 +1,12 @@
 from flask import render_template, request, jsonify
 from gui import login_required
-from db.devices import get_all_devices
+from db.devices import getAllDevices
 from db.device_data import (
-    get_all_keys,
-    get_all_report_ids,
-    get_time_series,
-    get_xy_series,
-    get_time_series_via_report_id
+    getAllKeys,
+    getAllReportIds,
+    getTimeSeries,
+    getXYSeries,
+    getTimeSeriesViaReportId
 )
 
 def register(app):
@@ -14,7 +14,7 @@ def register(app):
     @app.route("/visualize", methods=["GET"])
     @login_required
     def visualize():
-        devices = get_all_devices()
+        devices = getAllDevices()
         return render_template("visualizeData.html", devices=devices)
 
     @app.route("/api/get/reportedValues/keys", methods=["POST"])
@@ -23,7 +23,7 @@ def register(app):
         try:
             data = request.get_json(force=True)
             device_ids = data.get("device_ids", [])
-            keys = get_all_keys(device_ids)
+            keys = getAllKeys(device_ids)
             return jsonify(keys)
         except Exception as e:
             import traceback
@@ -36,7 +36,7 @@ def register(app):
         try:
             data = request.get_json(force=True)
             device_ids = data.get("device_ids", [])
-            report_ids = get_all_report_ids()
+            report_ids = getAllReportIds()
             return jsonify(report_ids)
         except Exception as e:
             import traceback
@@ -56,7 +56,7 @@ def register(app):
                 result = []
                 for device_id in device_ids:
                     for key in keys:
-                        rows = get_time_series(device_id, key)
+                        rows = getTimeSeries(device_id, key)
                         result.append({
                             "device_id": device_id,
                             "key": key,
@@ -76,7 +76,7 @@ def register(app):
                 x_key = data["x_key"]
                 y_key = data["y_key"]
 
-                rows = get_xy_series(id, x_key, y_key)
+                rows = getXYSeries(id, x_key, y_key)
                 return jsonify([
                     {"x": r[0], "y": r[1]}
                     for r in rows
@@ -98,7 +98,7 @@ def register(app):
             result = []
             
             for id in ids:
-                rows = get_time_series_via_report_id(id)
+                rows = getTimeSeriesViaReportId(id)
 
                 result.append({
                     "device_id": rows[3],

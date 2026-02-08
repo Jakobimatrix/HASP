@@ -7,7 +7,7 @@ class Timestamp(NamedTuple):
     seconds: int
     nanoseconds: int
 
-def get_timestamp() -> Timestamp:
+def getTimeStamp() -> Timestamp:
     unix_time_ns = time.time_ns()
     unix_time_s = unix_time_ns // 1_000_000_000
     unix_time_subsec = unix_time_ns % 1_000_000_000

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from db.user import insert_user, is_current_user_in_group, get_connection, update_user, delete_user
+from db.user import insertUser, isCurrentUserInGroup, getDB, updateUser, deleteUser, getUserData
 from flask import session
 import json
 
@@ -10,7 +10,7 @@ user_bp = Blueprint("user", __name__, template_folder="../templates")
 @user_bp.route("/add", methods=["GET", "POST"])
 def add():
     username = session.get("username")
-    if not username or not is_current_user_in_group("admin"):
+    if not username or not isCurrentUserInGroup("admin"):
         return "Access denied.", 403
 
     if request.method == "POST":
@@ -26,7 +26,7 @@ def add():
         elif password1 != password2:
             message = "Passwords do not match."
         else:
-            success = insert_user(username_input, password1, groups)
+            success = insertUser(username_input, password1, groups)
             if success:
                 return redirect(url_for("user.list"))
             else:
@@ -41,11 +41,11 @@ def add():
 @user_bp.route("/list", endpoint="list")
 def listAll():
     username = session.get("username")
-    if not username or not is_current_user_in_group("admin"):
+    if not username or not isCurrentUserInGroup("admin"):
         return "Access denied.", 403
 
     users = []
-    with get_connection() as con:
+    with getDB() as con:
         rows = con.execute("SELECT username, user_groups FROM users").fetchall()
         for row in rows:
             uname, groups_json = row
@@ -58,13 +58,13 @@ def listAll():
 @user_bp.route("/delete/<username>", endpoint="delete")
 def deleteUser(username):
     current_user = session.get("username")
-    if not current_user or not is_current_user_in_group("admin"):
+    if not current_user or not isCurrentUserInGroup("admin"):
         return "Access denied.", 403
 
     if username == current_user:
         return "You cannot delete yourself.", 403
 
-    delete_user(username)
+    deleteUser(username)
     return redirect(url_for("user.list"))
 
 
@@ -72,7 +72,7 @@ def deleteUser(username):
 @user_bp.route("/edit/<username>", methods=["GET", "POST"], endpoint="edit")
 def edit(username):
     current_user = session.get("username")
-    is_admin = is_current_user_in_group("admin")
+    is_admin = isCurrentUserInGroup("admin")
     if not current_user:
         return "Access denied.", 403
 
@@ -80,12 +80,8 @@ def edit(username):
     if not is_admin and username != current_user:
         return "Access denied.", 403
 
-    # Get current user data
-    with get_connection() as con:
-        row = con.execute("SELECT user_groups FROM users WHERE username = ?", (username,)).fetchone()
-        if not row:
-            return f"User '{username}' not found.", 404
-        groups = json.loads(row[0])
+    if not userExists(username):
+        return f"User '{username}' not found.", 404
 
     if request.method == "POST":
         password1 = request.form.get("password", "")
@@ -106,8 +102,7 @@ def edit(username):
         else:
             password = None
 
-        update_user(username, password, new_groups)
-        # If admin, redirect to user list; else, redirect to index
+        updateUser(username, password, new_groups)
         if is_admin:
             return redirect(url_for("user.list"))
         else:

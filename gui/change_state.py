@@ -8,7 +8,7 @@ def register(app):
     @app.route("/change_state/<device_id>", methods=["GET", "POST"], endpoint="change_state_view")
     @login_required
     def change_state_view(device_id):
-        row = state_db.get_state(device_id)
+        row = state_db.getDeviceState(device_id)
         if not row:
             flash('Device not found', 'error')
             return render_template('change_state.html', device_id=device_id, possible_states=[], current_state=None, requested_state=None, requested_state_start=None, requested_state_expire=None, save_dates=False)
@@ -28,9 +28,9 @@ def register(app):
             expire_ts = int(time.mktime(time.strptime(expire, '%Y-%m-%dT%H:%M'))) if expire else None
             if new_state and new_state in possible_states:
                 if save_dates:
-                    state_db.update_requested_state(device_id, new_state, start_ts, expire_ts)
+                    state_db.updateRequestedDeviceState(device_id, new_state, start_ts, expire_ts)
                 else:
-                    state_db.update_requested_state(device_id, new_state, None, None)
+                    state_db.updateRequestedDeviceState(device_id, new_state, None, None)
                 flash('Requested state updated.', 'success')
                 return redirect(url_for('change_state_view', device_id=device_id))
             else:

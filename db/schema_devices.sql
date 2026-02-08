@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS devices (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    definition TEXT NOT NULL,
+    name TEXT,
+    info TEXT,
+    device TEXT,
     last_seen INTEGER NOT NULL
 );
 

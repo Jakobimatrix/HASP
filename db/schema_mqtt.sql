@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     device_id TEXT NOT NULL,
     topic_name TEXT NOT NULL,
+    has_set BOOL NOT NULL  -- Whether the device listens to device_id/topic_name/set
+    has_state BOOL NOT NULL -- Whether the device publishes to device_id/topic_name/state
     UNIQUE(device_id, topic_name),
     FOREIGN KEY(device_id) REFERENCES devices(id) ON DELETE CASCADE
 );

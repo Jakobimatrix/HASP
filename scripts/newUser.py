@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import json
 import getpass
-from db.user import get_connection, insert_user, init_user_db
+from db.user import getDB, insertUser, init_user_db
 
 def create_user():
     # Ask for username
@@ -25,8 +25,8 @@ def create_user():
         print("Error: passwords do not match.")
         return
 
-    # Use insert_user from user.py
-    success = insert_user(username, pw1, groups)
+    # Use insertUser from user.py
+    success = insertUser(username, pw1, groups)
     if success:
         print(f"User '{username}' created successfully.")
     else:

@@ -1,5 +1,5 @@
 from flask import request, render_template, session, redirect, url_for
-from db.user import verify_user
+from db.user import verifyUser
 
 def register(app):
 
@@ -8,7 +8,7 @@ def register(app):
         if request.method == "POST":
             username = request.form.get("username")
             password = request.form.get("password")
-            if verify_user(username, password):
+            if verifyUser(username, password):
                 session["username"] = username
                 return redirect(url_for("index"))
             else:
