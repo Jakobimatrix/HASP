@@ -14,7 +14,7 @@ def removeMqttForDevice(device_id):
         deleteTopicSchemaForTopic(topic_id)
         deleteTopicSchema(topic_id)
         deleteTopic(topic_id)
-        deletePayloads(topic_id):
+        deletePayloads(topic_id)
 
 
 def deleteDevice(device_id):
