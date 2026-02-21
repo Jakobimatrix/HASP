@@ -104,7 +104,7 @@ def register(app):
     """
 
     @app.route("/api/post/state", methods=["POST"])
-        def post_state():
+    def post_state():
         data = request.get_json(force=True)
 
         try:
