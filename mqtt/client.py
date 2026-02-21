@@ -2,7 +2,7 @@ import json
 import threading
 import paho.mqtt.client as mqtt
 
-from db.mqtt import addTopicPayload, get_or_create_topic, getAllTopics
+from db.mqtt import addTopicPayload, getAllTopics
 from api.reportValues import handleReportValues
 from api.state import handleDeviceState
 from api.registerDevice import handleRegisterOrUpdateDevice
@@ -106,12 +106,12 @@ def onMessage(client, userdata, msg):
     if not deviceExists(device_id):
         return
 
-    topic_id = getTopicIdForDevice(device_id, topic_name)
-    if not topic_id:
-        return
+    #topic_id = getTopicIdForDevice(device_id, topic_name)
+    #if not topic_id:
+    #    return
 
-    addTopicPayload(topic_id, json.dumps(payload))
-    updateLastSeen(device_id)
+    #addTopicPayload(topic_id, json.dumps(payload))
+    #updateLastSeen(device_id)
 
 def startMqtt():
     global _client

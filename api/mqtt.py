@@ -3,7 +3,7 @@ import json
 
 from utilities.cache import hasMqttBrokerRunning
 from mqtt.client import publish as mqtt_publish
-from db.mqtt import addTopicPayload, get_or_create_topic
+from db.mqtt import addTopicPayload
 
 
 def register(app):
@@ -39,8 +39,8 @@ def register(app):
             mqtt_publish(topic, payload_str)
 
             # Persist payload (use topic_id, not topic string)
-            topic_id = get_or_create_topic(device_id, topic)
-            addTopicPayload(topic_id, payload_str)
+            # topic_id = getOrCreateTopic(device_id, topic)
+            # addTopicPayload(topic_id, payload_str)
 
             return jsonify({"success": True}), 200
 
