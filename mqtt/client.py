@@ -21,7 +21,7 @@ def publishApiResponse(device_id, topic, apiResponse):
     publish(f"{device_id}/api/{topic}", apiResponse)
 
 def tryDefaultMessages(msg, payload) -> bool:
-   device_id = payload.get("device_id")
+    device_id = payload.get("device_id")
 
     if msg.topic == "/api/reportValues":
         try:
