@@ -9,7 +9,7 @@ def storeMqttInfo(device_id, mqtt_offers):
     Expects a list of MQTT offers
     Each offer is a dict with the following format:
     {
-        "topic": "<string>",
+        "topic": "<string>",     # must not contain '/'
         "endpoints": ["set", "state"],
         "keys": [
             {
@@ -39,6 +39,8 @@ def storeMqttInfo(device_id, mqtt_offers):
             return f"Invalid MQTT offer format: missing or invalid endpoints in {offer}"
         if not keys or not isinstance(keys, list) or len(keys) == 0:
             return f"Invalid MQTT offer format: missing or invalid keys in {offer}"
+        if topic_name.find('/') != -1:
+            return f"Invalid MQTT offer format: topic_name: '{topic_name}' must not contain '/'"
         
         has_set = "set" in endpoints
         has_state = "state" in endpoints

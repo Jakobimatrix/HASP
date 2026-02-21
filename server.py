@@ -13,7 +13,7 @@ from db.user import initDB as init_user_db
 from db.device_data import initDB as init_device_data_db
 from db.state import initDB as init_state_db
 from db.mqtt import initDB as init_mqtt_db
-from utilities.mqtt import startMqtt
+from mqtt.client import startMqtt
 
 
 log = logging.getLogger("werkzeug")

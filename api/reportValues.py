@@ -3,6 +3,36 @@ from db.devices import deviceExists, updateLastSeen
 from utilities.time import Timestamp, getTimeStamp
 from db.device_data import insertMeasurements
 
+def handleReportValues(
+    *,
+    device_id: str,
+    key_values: dict,
+    ts_sec: int | None = None,
+    ts_nsec: int | None = None,
+    report_id: str = ""
+):
+    if not device_id or not deviceExists(device_id):
+        raise ValueError("invalid device_id")
+
+    if not isinstance(key_values, dict) or not key_values:
+        raise ValueError("no keyValues")
+
+    updateLastSeen(device_id)
+
+    if ts_sec is None:
+        ts = getTimeStamp()
+        ts_sec = ts.seconds
+        ts_nsec = ts.nanoseconds
+    else:
+        ts_nsec = ts_nsec or 0
+
+    rows = [
+        (device_id, ts_sec, ts_nsec, key, value, report_id)
+        for key, value in key_values.items()
+    ]
+
+    insertMeasurements(rows)
+
 def register(app):
 
     """
@@ -52,34 +82,19 @@ def register(app):
     @app.route("/api/reportValues", methods=["POST"])
     def reportValues():
         data = request.get_json(force=True)
-        device_id = data.get("device_id")
 
-        if not device_id or not deviceExists(device_id):
-            return jsonify({"error": "invalid device_id"}), 403
-
-        updateLastSeen(device_id)
-
-       # Timestamp handling
-        if "s" in data:
-            ts_sec = int(data["s"])
-            ts_nsec = int(data.get("ns", 0))
-        else:
-            ts = getTimeStamp()
-            ts_sec = ts.seconds
-            ts_nsec = ts.nanoseconds
-
-        key_values = data.get("keyValues")
-        if not isinstance(key_values, dict) or not key_values:
-            return jsonify({"error": "no keyValues"}), 400
-
-        report_id = data.get("report_id", "")
-
-        rows = []
-        for key, value in key_values.items():
-            rows.append(
-                (device_id, ts_sec, ts_nsec, key, value, report_id)
+        try:
+            handleReportValues(
+                device_id=data.get("device_id"),
+                key_values=data.get("keyValues"),
+                ts_sec=data.get("s"),
+                ts_nsec=data.get("ns"),
+                report_id=data.get("report_id")
             )
+        except ValueError as e:
+            msg = str(e)
+            status = 403 if "device_id" in msg else 400
+            return jsonify({"error": msg}), status
 
-        insertMeasurements(rows)
         return jsonify({"status": "ok"}), 200
 

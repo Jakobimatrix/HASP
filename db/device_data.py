@@ -167,14 +167,15 @@ def getTimeSeriesViaReportId(report_id: str):
     with getDB() as con:
         return con.execute(
             """
-            SELECT ts_sec, ts_nsec
+            SELECT ts_sec, ts_nsec,
                    COALESCE(value_num, value_int, value_text, value_bool) AS value,
-                   device_id
+                   device_id,
+                   key
             FROM measurements
             WHERE report_id = ?
             ORDER BY ts_sec, ts_nsec
             """,
-            (report_id, key),
+            (report_id,),
         ).fetchall()
 
 def removeDeviceData(device_id):

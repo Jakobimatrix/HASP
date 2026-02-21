@@ -1,5 +1,6 @@
 
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, request, render_template_string
+
 from datetime import datetime
 import json
 
@@ -77,6 +78,16 @@ def register(app):
 
         if not mqtt_topics or len(mqtt_topics) == 0:
             show_mqtt = False
+
+        if request.args.get('ajax') == '1':
+            # Only return the table body for AJAX refresh using the macro
+            return render_template_string(
+                """
+                {% from '_devices_table.html' import devices_table %}
+                {{ devices_table(devices) }}
+                """,
+                devices=devices
+            )
 
         return render_template(
             "manage_device.html",

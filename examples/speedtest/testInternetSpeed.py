@@ -41,9 +41,10 @@ def post_payload(payload: dict, endpoint):
         return None, None
 
 def run_speedtest(responsetime_ms):
+    best_server = None
     try:
         st = speedtest.Speedtest(secure=True)
-        st.get_best_server()
+        best_server = st.get_best_server()
     except Exception as e:
         print(f"[ERROR] Failed to get best server for speedtest: {e}")
         return
@@ -52,6 +53,11 @@ def run_speedtest(responsetime_ms):
     upload_speed = st.upload() / 1_000_000      # Mbit/s
     ping = st.results.ping
 
+    if best_server:
+        best_server_id = f"speedtest:{best_server['sponsor']} - ({best_server['name']},{best_server['country']})"
+    else:
+        best_server_id = "speedtest:unknown"
+
     payload = {
         "device_id": ID,
         "keyValues": {
@@ -59,7 +65,8 @@ def run_speedtest(responsetime_ms):
             "upload in Mbit/s": upload_speed,
             "ping": ping,
             "response_time_ms": responsetime_ms
-        }
+        },
+        "report_id": best_server_id
     }
 
     response, _ = post_payload(payload, "reportValues")

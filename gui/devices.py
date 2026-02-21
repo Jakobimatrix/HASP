@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request, render_template_string
 from db.devices import getAllDevices
 from db.state import getDeviceState
 from datetime import datetime
@@ -27,7 +27,6 @@ def register(app):
                 "requested_state": requested_state
             })
 
-        from flask import request, render_template_string
         if request.args.get('ajax') == '1':
             # Only return the table body for AJAX refresh using the macro
             return render_template_string(

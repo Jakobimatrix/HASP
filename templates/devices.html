@@ -17,6 +17,7 @@
         <div class="table-responsive" id="devicesTableContainer">
             {{ devices_table(devices) }}
         </div>
+
         <script>
         let refreshInterval = null;
         function startAutoRefresh() {
@@ -56,5 +57,6 @@
         }
         startAutoRefresh();
         </script>
+        
     </div>
 {{ footer(version=version, git_url=git_url) }}

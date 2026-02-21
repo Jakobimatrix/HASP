@@ -99,22 +99,24 @@ def register(app):
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-
-                result.append({
-                    "device_id": rows[3],
-                    "key": key,
-                    "points": [
-                        {
-                            "t": r[0] + r[1] / 1e9,
-                            "v": float(r[2]),
-                        }
-                        for r in rows
-                    ]
-                })
-
+                # Group by (device_id, key)
+                grouped = {}
+                for r in rows:
+                    ts_sec, ts_nsec, value, device_id, key = r
+                    group_key = (device_id, key)
+                    if group_key not in grouped:
+                        grouped[group_key] = []
+                    grouped[group_key].append({
+                        "t": ts_sec + ts_nsec / 1e9,
+                        "v": float(value) if isinstance(value, (int, float)) else value,
+                    })
+                for (device_id, key), points in grouped.items():
+                    result.append({
+                        "device_id": device_id,
+                        "key": key,
+                        "points": points
+                    })
             return jsonify(result)
-
-            return jsonify({"error": "invalid mode"}), 400
 
         except Exception as e:
             import traceback

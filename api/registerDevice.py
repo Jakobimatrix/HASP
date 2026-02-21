@@ -7,7 +7,59 @@ from utilities.removeFromDB import removeMqttForDevice, deleteDevice
 from utilities.addToDB import addDevice
 from utilities.updateDB import updateDevice
 
+def handleRegisterOrUpdateDevice(
+    *,
+    name=None,
+    device_id=None,
+    info=None,
+    device=None,
+    offers_string=None,
+    allow_create=True
+):
+    # Parse offers
+    offers = []
+    if offers_string:
+        try:
+            offers = json.loads(offers_string)
+        except Exception as e:
+            raise ValueError(f"Failed to parse offers: {str(e)}")
 
+    reset_id = getResetDevice()
+    if reset_id:
+        if not deviceExists(reset_id):
+            raise RuntimeError("reset device not found")
+
+        error = updateDevice(reset_id, info, offers)
+        if error:
+            raise ValueError(f"Failed to parse offers: {error}")
+
+        clearResetDevice()
+        return reset_id
+
+    if device_id:
+        if not deviceExists(device_id):
+            raise ValueError("invalid device_id")
+
+        error = updateDevice(device_id, info, offers)
+        if error:
+            raise ValueError(f"Failed to parse offers: {error}")
+
+        return device_id
+
+    if not allow_create:
+        raise ValueError("device_id required")
+
+    # Create new device
+    new_device_id = device_id or str(uuid.uuid4())
+    if deviceExists(new_device_id):
+        raise ValueError("invalid device_id")
+
+    error = addDevice(new_device_id, name, info, device, offers)
+    if error:
+        raise ValueError(f"Failed to parse offers: {error}")
+
+    return new_device_id
+    
 def register(app):
 
     """
@@ -123,62 +175,36 @@ def register(app):
     @app.route("/api/registerDevice", methods=["POST"])
     def registerDevice():
         data = request.get_json(force=True)
-        name = data.get("name")
-        offersString = data.get("offers")
-        offers = []
-        if offersString:
-            try:
-                offers = json.loads(offersString)
-            except Exception as e:
-                return jsonify({"error": f"Failed to parse offers: {str(e)}"}), 403          
-            
-        info = data.get("info")
-        device = data.get("device")
 
-        reset_id = getResetDevice()
-        if reset_id:
-            dev = getDevice(reset_id)
-            if not deviceExists(reset_id):
-                return jsonify({"error": "Internal Server Error."}), 500
-
-            error = updateDevice(reset_id, info, offers)
-            if error:
-                return jsonify({"error": f"Failed to parse offers: {error}"}), 403
-
-            clearResetDevice()
-            return jsonify({"device_id": reset_id}), 200
-
-        device_id = data.get("device_id", str(uuid.uuid4()))
-        if deviceExists(device_id):
-            return jsonify({"error": "invalid device_id"}), 403
-
-        error = addDevice(device_id, name, info, device, offers)
-        if error:
-            return jsonify({"error": f"Failed to parse offers: {error}"}), 403
+        try:
+            device_id = handleRegisterOrUpdateDevice(
+                name=data.get("name"),
+                device_id=data.get("device_id"),
+                info=data.get("info"),
+                device=data.get("device"),
+                offers_string=data.get("offers"),
+                allow_create=True
+            )
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 403
+        except RuntimeError:
+            return jsonify({"error": "Internal Server Error."}), 500
 
         return jsonify({"device_id": device_id}), 200
 
     @app.route("/api/updateDeviceInfo", methods=["POST"])
     def updateDeviceInfo():
         data = request.get_json(force=True)
-        device_id = data.get("device_id")
-        if not device_id:
-            return jsonify({"error": "device_id required"}), 400
-        
-        if not deviceExists(device_id):
-            return jsonify({"error": "invalid device_id"}), 403
 
-        offersString = data.get("offers")
-        offers = []
-        if offersString:
-            try:
-                offers = json.loads(offersString)
-            except Exception as e:
-                return jsonify({"error": f"Failed to parse offers: {str(e)}"}), 403          
-
-        error = updateDevice(device_id, data.get("info"), offers)
-        if error:
-            return jsonify({"error": f"Failed to parse offers: {error}"}), 403
+        try:
+            device_id = handleRegisterOrUpdateDevice(
+                device_id=data.get("device_id"),
+                info=data.get("info"),
+                offers_string=data.get("offers"),
+                allow_create=False
+            )
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
         return jsonify({"device_id": device_id}), 200
 
