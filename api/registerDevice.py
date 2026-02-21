@@ -1,7 +1,7 @@
 from flask import request, jsonify
 import uuid
 
-from db.devices import addNewDevice, deviceExists, update_device_definition, getDevice
+from db.devices import addNewDevice, deviceExists, getDevice
 from utilities.cache import getResetDevice, clearResetDevice
 from utilities.removeFromDB import removeMqttForDevice, deleteDevice
 from utilities.addToDB import addDevice

@@ -1,6 +1,7 @@
 from utilities.removeFromDB import deleteDevice
 from utilities.addToDB import storeOffers
 from db.device_data import updateDeviceId
+from db.devices import getDevice, updateDevice
 from db.mqtt import updateDeviceIdForTopics, getTopicsForDevice
 from mqtt.client import subscribe, unsubscribe
 
@@ -26,5 +27,5 @@ def mergeDeviceId(merge_id, device_id):
 
 def updateDevice(device_id, info, offer):
     current_device_data = getDevice(device_id);
-    update_device_definition(device_id, current_device_data["name"], info, current_device_data["device"])
+    updateDevice(device_id, current_device_data["name"], info, current_device_data["device"])
     return storeOffers(device_id, offer)
