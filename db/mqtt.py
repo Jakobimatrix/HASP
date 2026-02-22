@@ -36,6 +36,16 @@ def getTopicsForDevice(device_id):
             (device_id,)
         ).fetchall()
 
+def getTopicId(device_id, topic_name):
+    with getDB() as con:
+        row = con.execute(
+            f"SELECT id FROM {TOPICS_TABLE} WHERE device_id = ? AND topic_name = ?",
+            (device_id, topic_name)
+        ).fetchone()
+        if row:
+            return row[0]
+        return None
+
 def updateDeviceIdForTopics(old_device_id, new_device_id):
     with getDB() as con:
         con.execute(
@@ -104,6 +114,10 @@ def getAllTopicsForDevice(device_id):
     topics = []
     for topic_id, name in topic_rows:
         keys = getTopicSchemaActiveConnection(topic_id, dbConnection)
+        topic_info = getTopic(topic_id)
+        if not topic_info:
+            print(f"Error: Topic with id {topic_id} fount in {TOPICS_SCHEMA_TABLE} but not in {TOPICS_TABLE}. This should not happen.")
+            continue
 
         # Normalize enum_values from JSON string → list
         for k in keys:
@@ -116,7 +130,9 @@ def getAllTopicsForDevice(device_id):
         topics.append({
             "id": topic_id,
             "name": name,
-            "keys": keys
+            "keys": keys,
+            "has_set": topic_info["has_set"],
+            "has_state": topic_info["has_state"]
         })
 
     return topics
@@ -138,7 +154,7 @@ def addTopicPayload(topic_id, payload):
     with getDB() as con:
         con.execute(
             f"INSERT INTO {TOPICS_TABLE_PAYLOADS} (topic_id, time_seconds, time_nanoseconds, payload) VALUES (?, ?, ?, ?)",
-            (topic_id, timestamp.seconds, timestamp.nanoseconds, payload)
+            (topic_id, timestamp.seconds, timestamp.nanoseconds, json.dumps(payload))
         )
 
 def getLatestPayload(topic_id):

@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS topic_schema (
     min_value REAL,
     max_value REAL,
     enum_values TEXT,               -- JSON array for dropdowns, optional
-    UNIQUE(topic_id, key_name),
+    UNIQUE(topic_id),
     FOREIGN KEY(topic_id) REFERENCES topics(id) ON DELETE CASCADE
 );
 

@@ -2,12 +2,15 @@ from flask import request, jsonify
 import json
 
 from utilities.cache import hasMqttBrokerRunning
-from mqtt.client import publish as mqtt_publish
+from mqtt.client import publishSet
 from db.mqtt import addTopicPayload
+
+from gui import login_required
 
 
 def register(app):
     @app.route("/api/send/mqtt", methods=["POST"])
+    @login_required
     def send_mqtt():
         """
         Expects JSON:
@@ -33,15 +36,7 @@ def register(app):
             return jsonify({"error": "Missing or invalid parameters"}), 400
 
         try:
-            payload_str = json.dumps(values)
-
-            # Publish via shared MQTT client
-            mqtt_publish(topic, payload_str)
-
-            # Persist payload (use topic_id, not topic string)
-            # topic_id = getOrCreateTopic(device_id, topic)
-            # addTopicPayload(topic_id, payload_str)
-
+            publishSet(device_id, topic, values)
             return jsonify({"success": True}), 200
 
         except Exception as e:

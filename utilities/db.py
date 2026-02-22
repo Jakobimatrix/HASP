@@ -1,7 +1,25 @@
-from utilities.removeFromDB import removeMqttForDevice, deleteDevice
-from db.device_data import updateDeviceId
-from mqtt.client import subscribe
-from db.mqtt import addTopic, addTopicSchema, getTopicsForDevice
+from db.device_data import updateDeviceId, removeDeviceData
+from db.state import deleteDeviceState
+from mqtt.client import subscribeState, unsubscribeState
+from db.mqtt import addTopic, addTopicSchema, getTopicsForDevice, deleteTopic, deleteTopicSchema, deleteTopicSchemaForTopic, deletePayloads, updateDeviceIdForTopics
+from db.devices import getDevice, updateDevice, removeDevice, addNewDevice
+
+def removeMqttForDevice(device_id):
+    topics = getTopicsForDevice(device_id)
+    for topic_id, topic_name, has_set, has_state in topics:
+        if has_state:
+            unsubscribeState(device_id, topic_name)
+        deleteTopicSchemaForTopic(topic_id)
+        deleteTopicSchema(topic_id)
+        deleteTopic(topic_id)
+        deletePayloads(topic_id)
+
+
+def deleteDevice(device_id):
+    removeMqttForDevice(device_id);
+    removeDevice(device_id)
+    deleteDeviceState(device_id)
+    removeDeviceData(device_id)
 
 
 def storeMqttInfo(device_id, mqtt_offers):
@@ -25,7 +43,7 @@ def storeMqttInfo(device_id, mqtt_offers):
     1. unsubscribe all current subscriptions to device_id
     2. remove database entries of old mqtt offers
     3. add new mqtt offerst to db
-    4. subscribe to offers
+    4. subscribe to state offers
     """
     removeMqttForDevice(device_id)
 
@@ -63,12 +81,9 @@ def storeMqttInfo(device_id, mqtt_offers):
                 min_value=min_value,
                 max_value=max_value,
                 enum_values=str(enum_values) if enum_values else None
-            )   
-
-        if has_set:
-            subscribe(f"{device_id}/{topic_name}/set")
+            )
         if has_state:
-            subscribe(f"{device_id}/{topic_name}/state")
+            unsubscribeState(device_id, topic_name)
 
     return None
 
@@ -99,3 +114,23 @@ def addDevice(device_id, name, info, device, offer):
         deleteDevice(device_id)
         return error
     return None
+
+def mergeDeviceId(merge_id, device_id):
+    topics = getTopicsForDevice(merge_id)
+    for topic_id, topic_name, has_set, has_state in topics:
+        if has_state:
+            unsubscribeState(device_id, topic_name)
+
+    updateDeviceIdForTopics(old_device_id = merge_id, new_device_id = device_id)
+
+    updateDeviceId(old_id = merge_id, new_id = device_id)
+    deleteDevice(merge_id)
+
+    for topic_id, topic_name, has_set, has_state in topics:
+        if has_state:
+            subscribeState(device_id, topic_name)
+
+def updateDevice(device_id, info, offer):
+    current_device_data = getDevice(device_id);
+    updateDevice(device_id, current_device_data["name"], info, current_device_data["device"])
+    return storeOffers(device_id, offer)

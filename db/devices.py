@@ -62,7 +62,7 @@ def updateDeviceName(device_id, new_name):
             (new_name, device_id)
         )
 
-def update_device(device_id, name, info, device):
+def updateDevice(device_id, name, info, device):
     with getDB() as con:
         con.execute(
             "UPDATE devices SET name = ?, info = ?, device = ? WHERE id = ?",

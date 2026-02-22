@@ -12,8 +12,7 @@ from utilities.cache import setResetDevice
 from utilities.time import seconds2FormatedTime
 from db.mqtt import getAllTopicsForDevice, getLatestPayload
 from utilities.cache import hasMqttBrokerRunning
-from utilities.removeFromDB import deleteDevice
-from utilities.updateDB import mergeDeviceId
+from utilities.db import deleteDevice, mergeDeviceId
 
 
 def register(app):
@@ -59,23 +58,32 @@ def register(app):
         show_mqtt = hasMqttBrokerRunning()
 
         mqtt_topics = []
-        last_values = {}
         if show_mqtt:
-            #todo
             for topic_row in getAllTopicsForDevice(device_id):
+                last_values = {}
+                message = ""
+                if topic_row["has_state"]:
+                    latest = getLatestPayload(topic_row["id"])
+                    if latest:
+                        last_values = json.loads(latest["payload"])
+                        message = f"Last update: {seconds2FormatedTime(latest['time_seconds'])}"
+                    else:
+                        message = "No payload received yet."
+                else:
+                    message = "No state topic, cannot show current values."
+                if not topic_row["has_set"]:
+                    message = message + " Data is read only."
+
                 mqtt_topics.append({
                     "name": topic_row["name"],
                     "id": topic_row["id"],
-                    "keys": topic_row["keys"]
+                    "keys": topic_row["keys"],
+                    "has_set": topic_row["has_set"],
+                    "has_state": topic_row["has_state"],
+                    "last_values": last_values,
+                    "message": message
                 })
             
-            for topic in mqtt_topics:
-                latest = getLatestPayload(topic["id"])
-                if latest:
-                    last_values[topic["name"]] = json.loads(latest["payload"])
-                else:
-                    last_values[topic["name"]] = {}
-
         if not mqtt_topics or len(mqtt_topics) == 0:
             show_mqtt = False
 
@@ -96,6 +104,5 @@ def register(app):
             data_count=data_count,
             other_devices=other_devices,
             mqtt_topics=mqtt_topics,
-            last_values=last_values,
             show_mqtt=show_mqtt
         )

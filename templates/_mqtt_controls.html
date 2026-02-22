@@ -1,4 +1,4 @@
-{% macro mqtt_controls(device_id, mqtt_topics, last_values, show_mqtt) %}
+{% macro mqtt_controls(device_id, mqtt_topics, show_mqtt) %}
 {% if show_mqtt %}
 <div class="mb-4">
     <h4>MQTT Controls</h4>
@@ -6,53 +6,116 @@
         <div class="mb-3 mqtt-topic" data-topic="{{ topic.name }}">
             <h5>{{ topic.name }}</h5>
             {% for key in topic.keys %}
-                {% set value = last_values.get(topic.name, {}).get(key.key_name, '') %}
-                <div class="mb-2">
-                    {% if key.value_type in ['float', 'int'] %}
-                        <label for="{{ topic.name }}_{{ key.key_name }}">{{ key.key_name }}:</label>
-                        {% if key.min_value is not none and key.max_value is not none %}
-                            <input type="range"
-                                   id="{{ topic.name }}_{{ key.key_name }}_slider"
-                                   min="{{ key.min_value }}"
-                                   max="{{ key.max_value }}"
-                                   step="{{ 0.01 if key.value_type == 'float' else 1 }}"
-                                   value="{{ value }}"
-                                   class="mqtt-slider"
-                                   data-key="{{ key.key_name }}">
+                {% if topic.message != "" %}
+                    <div class="mb-2">
+                        <em>{{ topic.message }}</em>
+                    </div>
+                {% else %}
+                    {% set value = topic.last_values.get(key.key_name, '') %}
+                    {% if value != '' %}
+                        {% if not topic.has_set %}
+                            <div class="mb-2">
+                                <label>{{ key.key_name }}:</label>
+                                <span>{{ value }}</span>
+                            </div>
+                        {% else %}
+                            <div class="mb-2">
+                                {% if key.value_type in ['float', 'int'] %}
+                                    <label for="{{ topic.name }}_{{ key.key_name }}">{{ key.key_name }}:</label>
+                                    {% if key.min_value is not none and key.max_value is not none %}
+                                        <input type="range"
+                                            id="{{ topic.name }}_{{ key.key_name }}_slider"
+                                            min="{{ key.min_value }}"
+                                            max="{{ key.max_value }}"
+                                            step="{{ 0.01 if key.value_type == 'float' else 1 }}"
+                                            value="{{ value }}"
+                                            class="mqtt-slider"
+                                            data-key="{{ key.key_name }}">
+                                    {% endif %}
+                                    <input type="number"
+                                        id="{{ topic.name }}_{{ key.key_name }}_input"
+                                        {% if key.min_value is not none %} min="{{ key.min_value }}" {% endif %}
+                                        {% if key.max_value is not none %} max="{{ key.max_value }}" {% endif %}
+                                        step="{{ 0.01 if key.value_type == 'float' else 1 }}"
+                                        value="{{ value }}"
+                                        class="mqtt-input"
+                                        data-key="{{ key.key_name }}">
+                                {% elif key.value_type == 'enum' %}
+                                    <label for="{{ topic.name }}_{{ key.key_name }}">{{ key.key_name }}:</label>
+                                    <select id="{{ topic.name }}_{{ key.key_name }}"
+                                            class="mqtt-select"
+                                            data-key="{{ key.key_name }}">
+                                        {% for option in key.enum_values %}
+                                            <option value="{{ option }}" {% if option == value %}selected{% endif %}>
+                                                {{ option }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                {% elif key.value_type == 'bool' %}
+                                    <label>
+                                        <input type="checkbox"
+                                            id="{{ topic.name }}_{{ key.key_name }}"
+                                            class="mqtt-checkbox"
+                                            data-key="{{ key.key_name }}"
+                                            {% if value %}checked{% endif %}>
+                                        {{ key.key_name }}
+                                    </label>
+                                {% endif %}
+                            </div>
                         {% endif %}
-                        <input type="number"
-                               id="{{ topic.name }}_{{ key.key_name }}_input"
-                               {% if key.min_value is not none %} min="{{ key.min_value }}" {% endif %}
-                               {% if key.max_value is not none %} max="{{ key.max_value }}" {% endif %}
-                               step="{{ 0.01 if key.value_type == 'float' else 1 }}"
-                               value="{{ value }}"
-                               class="mqtt-input"
-                               data-key="{{ key.key_name }}">
-                    {% elif key.value_type == 'enum' %}
-                        <label for="{{ topic.name }}_{{ key.key_name }}">{{ key.key_name }}:</label>
-                        <select id="{{ topic.name }}_{{ key.key_name }}"
-                                class="mqtt-select"
-                                data-key="{{ key.key_name }}">
-                            {% for option in key.enum_values %}
-                                <option value="{{ option }}" {% if option == value %}selected{% endif %}>
-                                    {{ option }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    {% elif key.value_type == 'bool' %}
-                        <label>
-                            <input type="checkbox"
-                                   id="{{ topic.name }}_{{ key.key_name }}"
-                                   class="mqtt-checkbox"
-                                   data-key="{{ key.key_name }}"
-                                   {% if value %}checked{% endif %}>
-                            {{ key.key_name }}
-                        </label>
                     {% endif %}
-                </div>
+                {% endif %}
             {% endfor %}
         </div>
     {% endfor %}
 </div>
+<script>
+function sendMQTTTopic(topicDiv) {
+    const topic = topicDiv.dataset.topic;
+    const values = {};
+    topicDiv.querySelectorAll(".mqtt-input, .mqtt-slider, .mqtt-select, .mqtt-checkbox").forEach(el => {
+        let value;
+        if(el.type === "checkbox") value = el.checked;
+        else if(el.type === "number") value = parseFloat(el.value);
+        else value = el.value;
+        values[el.dataset.key] = value;
+    });
+
+    fetch("/api/send/mqtt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            device_id: "{{ device.id }}",
+            topic: topic,
+            values: values
+        })
+    });
+}
+
+// Sliders <-> inputs sync
+document.querySelectorAll(".mqtt-slider").forEach(slider => {
+    const input = document.getElementById(slider.id.replace("_slider","_input"));
+    slider.addEventListener("input", e => input.value = slider.value);
+    slider.addEventListener("change", e => sendMQTTTopic(slider.closest(".mqtt-topic")));
+});
+
+document.querySelectorAll(".mqtt-input").forEach(input => {
+    const slider = document.getElementById(input.id.replace("_input","_slider"));
+    input.addEventListener("change", e => {
+        if(slider) slider.value = input.value;
+        sendMQTTTopic(input.closest(".mqtt-topic"));
+    });
+});
+
+// Dropdowns
+document.querySelectorAll(".mqtt-select").forEach(sel => {
+    sel.addEventListener("change", e => sendMQTTTopic(sel.closest(".mqtt-topic")));
+});
+
+// Checkboxes
+document.querySelectorAll(".mqtt-checkbox").forEach(cb => {
+    cb.addEventListener("change", e => sendMQTTTopic(cb.closest(".mqtt-topic")));
+});
+</script>
 {% endif %}
 {% endmacro %}

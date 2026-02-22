@@ -3,9 +3,7 @@ import uuid
 
 from db.devices import addNewDevice, deviceExists, getDevice
 from utilities.cache import getResetDevice, clearResetDevice
-from utilities.removeFromDB import removeMqttForDevice, deleteDevice
-from utilities.addToDB import addDevice
-from utilities.updateDB import updateDevice
+from utilities.db import removeMqttForDevice, deleteDevice, addDevice, updateDevice
 
 def handleRegisterOrUpdateDevice(
     *,
