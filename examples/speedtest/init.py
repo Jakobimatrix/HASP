@@ -5,17 +5,13 @@
 import requests
 import json
 
-import from config import URL, ID, DEVICE_NAME
+from config import URL, ID, DEVICE_NAME
 
 payload = {
     "name": DEVICE_NAME,
     "device_id": ID,
-    "definition": json.dumps({
-        "uses": ["api/reportValues", "api/post/state"],
-        "offers": [],
-        "info": "Speedtest device reporting internet speed and response time.",
-        "Device": "Server"
-    })
+    "info": "speedtest",
+    "device": "cronjob server"
 }
 
 response = requests.post(

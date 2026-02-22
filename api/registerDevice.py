@@ -36,7 +36,13 @@ def handleRegisterOrUpdateDevice(
 
     if device_id:
         if not deviceExists(device_id):
-            raise ValueError("invalid device_id")
+            if not allow_create:
+                raise ValueError(f"device_id {device_id} does not exist")
+
+            error = addDevice(device_id, name, info, device, offers)
+            if error:
+                raise ValueError(f"Failed to parse offers: {error}")
+            return device_id
 
         error = updateDevice(device_id, info, offers)
         if error:
@@ -50,7 +56,7 @@ def handleRegisterOrUpdateDevice(
     # Create new device
     new_device_id = device_id or str(uuid.uuid4())
     if deviceExists(new_device_id):
-        raise ValueError("invalid device_id")
+        raise ValueError("Internal Error: device_id collision, try again")
 
     error = addDevice(new_device_id, name, info, device, offers)
     if error:
