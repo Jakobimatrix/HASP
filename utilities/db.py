@@ -1,6 +1,5 @@
 from db.device_data import updateDeviceId, removeDeviceData
 from db.state import deleteDeviceState
-from mqtt.client import subscribeState, unsubscribeState
 from db.mqtt import addTopic, addTopicSchema, getTopicsForDevice, deleteTopic, deleteTopicSchema, deleteTopicSchemaForTopic, deletePayloads, updateDeviceIdForTopics
 from db.devices import getDevice, updateDevice, removeDevice, addNewDevice
 
@@ -8,6 +7,8 @@ def removeMqttForDevice(device_id):
     topics = getTopicsForDevice(device_id)
     for topic_id, topic_name, has_set, has_state in topics:
         if has_state:
+            # avoid circular import
+            from mqtt.client import unsubscribeState
             unsubscribeState(device_id, topic_name)
         deleteTopicSchemaForTopic(topic_id)
         deleteTopicSchema(topic_id)
@@ -83,6 +84,8 @@ def storeMqttInfo(device_id, mqtt_offers):
                 enum_values=str(enum_values) if enum_values else None
             )
         if has_state:
+            # avoid circular import
+            from mqtt.client import unsubscribeState
             unsubscribeState(device_id, topic_name)
 
     return None
@@ -119,6 +122,8 @@ def mergeDeviceId(merge_id, device_id):
     topics = getTopicsForDevice(merge_id)
     for topic_id, topic_name, has_set, has_state in topics:
         if has_state:
+            # avoid circular import
+            from mqtt.client import unsubscribeState
             unsubscribeState(device_id, topic_name)
 
     updateDeviceIdForTopics(old_device_id = merge_id, new_device_id = device_id)
@@ -128,6 +133,8 @@ def mergeDeviceId(merge_id, device_id):
 
     for topic_id, topic_name, has_set, has_state in topics:
         if has_state:
+            # avoid circular import
+            from mqtt.client import subscribeState
             subscribeState(device_id, topic_name)
 
 def updateDevice(device_id, info, offer):
