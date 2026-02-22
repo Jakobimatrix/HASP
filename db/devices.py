@@ -19,7 +19,7 @@ def addNewDevice(device_id, name, info, device):
         name = device_id
     with getDB() as con:
         con.execute(
-            "INSERT INTO devices (id, name, info, device, last_seen) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO devices (id, name, info, device, last_seen) VALUES (?, ?, ?, ?, ?)",
             (device_id, name, info, device, timestamp.seconds)
         )
 
