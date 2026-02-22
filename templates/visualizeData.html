@@ -486,10 +486,7 @@ function renderChart(mode, data) {
         
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
-            let chartIdx = 0;
-            if (split){
-                chartIdx = i;
-            }
+            const chartIdx = i;
             const defaultType = "scatter";
             const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
             container.appendChild(dropdown);
