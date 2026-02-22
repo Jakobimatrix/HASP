@@ -153,8 +153,8 @@ def getXYSeries(device_id: str, x_key: str, y_key: str):
             SELECT
                 x.ts_sec,
                 x.ts_nsec,
-                x.value_num AS x,
-                y.value_num AS y
+                COALESCE(x.value_num, x.value_int, x.value_text, x.value_bool) AS x,
+                COALESCE(y.value_num, y.value_int, y.value_text, y.value_bool) AS y
             FROM measurements x
             JOIN measurements y
             ON x.device_id = y.device_id

@@ -78,7 +78,7 @@ def register(app):
                     "x_key": x_key,
                     "y_key": y_key,
                     "points": [
-                        {"x": r[0], "y": r[1]}
+                        {"x": float(r[0]), "y": float(r[1])}
                         for r in rows
                     ]
                 })
@@ -110,17 +110,17 @@ def register(app):
                         grouped[key] = []
                     grouped[key].append(r)
 
-                for key, rows in grouped.items():
+                for key, groupedRows in grouped.items():
                     result.append({
-                        "device_id": rows[0][3] + ":" + id,
-                        "key": rows[0][4] + ":" + id,
+                        "device_id": groupedRows[0][2] + ":" + id,
+                        "key": groupedRows[0][3] + ":" + id,
                         "points": [
                             {
                                 "t": r[0] + r[1] / 1e9,
-                                "v": float(r[2]),
+                                "v": float(r[4]),
 
                             }
-                            for r in rows
+                            for r in groupedRows
                         ]
                 })
             return jsonify(result)
