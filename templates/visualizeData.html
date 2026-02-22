@@ -60,6 +60,7 @@
             <label class="form-check-label" for="syncXZoomToggle">Synchronize X zoom</label>
         </div>
         <div class="ms-3 d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" id="panBtn">Pan</button>
             <button class="btn btn-outline-secondary btn-sm" id="zoomXBtn">Zoom X</button>
             <button class="btn btn-outline-secondary btn-sm" id="zoomYBtn">Zoom Y</button>
             <button class="btn btn-outline-secondary btn-sm" id="zoomXYBtn">Zoom XY</button>
@@ -268,7 +269,7 @@ function renderChart(mode, data) {
                         x = x / (86400 * 365.25); // average year
                         break;
                     case "date":
-                        x = new Date((p.t) * 1000); // p.t is seconds
+                        x = (p.t) * 1000; // p.t is seconds
                         break;
                 }
                 return { x, y: p.v };
@@ -433,7 +434,7 @@ function renderChart(mode, data) {
             plugins: {
                 zoom: {
                     pan: { enabled: true, mode: zoomMode },
-                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
+                    zoom: { wheel: { enabled: false }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
                 }
             },
             scales: {
@@ -498,12 +499,51 @@ function applyZoomState(state) {
     });
 }
 
+
+const modeButtons = [
+    { id: "panBtn", mode: "pan" },
+    { id: "zoomXBtn", mode: "x" },
+    { id: "zoomYBtn", mode: "y" },
+    { id: "zoomXYBtn", mode: "xy" }
+];
+
+function highlightModeButton(selectedId) {
+    modeButtons.forEach(btn => {
+        const el = document.getElementById(btn.id);
+        if (el) {
+            if (btn.id === selectedId) {
+                el.classList.add("active");
+                el.classList.remove("btn-outline-secondary");
+                el.classList.add("btn-primary");
+            } else {
+                el.classList.remove("active");
+                el.classList.remove("btn-primary");
+                el.classList.add("btn-outline-secondary");
+            }
+        }
+    });
+}
+
+function setZoomMode(mode) {
+    zoomMode = mode;
+    charts.forEach(c => {
+        c.options.plugins.zoom.pan.mode = mode === "pan" ? zoomMode : mode;
+        c.options.plugins.zoom.zoom.mode = mode === "pan" ? zoomMode : mode;
+        c.update();
+    });
+    highlightModeButton(modeButtons.find(btn => btn.mode === mode)?.id);
+}
+
+document.getElementById("panBtn").addEventListener("click", () => setZoomMode('pan'));
 document.getElementById("zoomXBtn").addEventListener("click", () => setZoomMode('x'));
 document.getElementById("zoomYBtn").addEventListener("click", () => setZoomMode('y'));
 document.getElementById("zoomXYBtn").addEventListener("click", () => setZoomMode('xy'));
 document.getElementById("undoZoomBtn").addEventListener("click", undoZoom);
 document.getElementById("redoZoomBtn").addEventListener("click", redoZoom);
 document.getElementById("resetZoomBtn").addEventListener("click", resetZoom);
+
+// Set initial highlight
+highlightModeButton("zoomXYBtn");
 
 
 function exportCSV() {
