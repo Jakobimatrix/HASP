@@ -1,7 +1,7 @@
 from db.device_data import updateDeviceId, removeDeviceData
 from db.state import deleteDeviceState
 from db.mqtt import addTopic, addTopicSchema, getTopicsForDevice, deleteTopic, deleteTopicSchema, deleteTopicSchemaForTopic, deletePayloads, updateDeviceIdForTopics
-from db.devices import getDevice, updateDevice, removeDevice, addNewDevice
+import db.devices as devices_mod
 
 def removeMqttForDevice(device_id):
     topics = getTopicsForDevice(device_id)
@@ -18,7 +18,7 @@ def removeMqttForDevice(device_id):
 
 def deleteDevice(device_id):
     removeMqttForDevice(device_id);
-    removeDevice(device_id)
+    devices_mod.removeDevice(device_id)
     deleteDeviceState(device_id)
     removeDeviceData(device_id)
 
@@ -111,7 +111,7 @@ def storeOffers(device_id, offers):
     return None
 
 def addDevice(device_id, name, info, device, offers):
-    addNewDevice(device_id, name, info, device)
+    devices_mod.addNewDevice(device_id, name, info, device)
     error = storeOffers(device_id, offers)
     if error:
         deleteDevice(device_id)
@@ -138,6 +138,6 @@ def mergeDeviceId(merge_id, device_id):
             subscribeState(device_id, topic_name)
 
 def updateDevice(device_id, info, offer):
-    current_device_data = getDevice(device_id);
-    updateDevice(device_id, current_device_data["name"], info, current_device_data["device"])
+    current_device_data = devices_mod.getDevice(device_id)
+    devices_mod.updateDevice(device_id, current_device_data["name"], info, current_device_data["device"])
     return storeOffers(device_id, offer)
