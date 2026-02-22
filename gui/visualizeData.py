@@ -98,7 +98,7 @@ def register(app):
     def api_data_via_report_id():
         try:
             data = request.get_json(force=True)
-            ids = data["report_ids"]
+            ids = data["keys"]  # in this case keys are report_ids
             result = []
             
             for id in ids:

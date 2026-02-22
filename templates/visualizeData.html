@@ -164,16 +164,12 @@ async function loadPlot() {
 
     const source = document.getElementById("sourceSelect").value;
 
+
     if (mode === "independent") {
-        if( source === "report_id") {
-            payload.report_ids = getSelectedValues("deviceSelect");
-        } else {
-            payload.device_ids = getSelectedValues("deviceSelect");
-        }
+        payload.device_ids = getSelectedValues("deviceSelect");
         payload.keys = getSelectedValues("keys");
     } else {
         if( source === "report_id") {
-            // not supported, throw alert
             alert("XY plot mode with Report ID source is not supported.");
             return;
         } else {
@@ -184,9 +180,9 @@ async function loadPlot() {
     }
 
     let api_call = "";
-    if( source === "report_id") {
+    if ( source === "report_id") {
         api_call = "/api/get/reportedValues/via_report_id";
-    } else if( source   === "device_id" ){
+    } else if (source === "device_id") {
         api_call = "/api/get/reportedValues/via_device_id";
     }
 
