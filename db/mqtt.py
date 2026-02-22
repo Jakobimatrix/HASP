@@ -56,10 +56,8 @@ def updateDeviceIdForTopics(old_device_id, new_device_id):
 def getAllTopics():
     with getDB() as con:
         return con.execute(
-            f"SELECT device_id, topic_name, has_set, has_state FROM {TOPICS_TABLE}",
-            (device_id,)
+            f"SELECT device_id, topic_name, has_set, has_state FROM {TOPICS_TABLE}"
         ).fetchall()
-        return [dict(zip(["device_id", "topic_name", "has_set", "has_state"], r)) for r in rows]
 
 def getTopic(topic_id):
     with getDB() as con:
