@@ -100,15 +100,21 @@ def register(app):
             data = request.get_json(force=True)
             ids = data["keys"]  # in this case keys are report_ids
             result = []
+
+            debgRows = None
+            debugGroups = None
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
+                debgRows = rows
                 grouped = {}
                 for r in rows:
                     key = r[3] + ":" + r[4]  # device_id:key
                     if key not in grouped:
                         grouped[key] = []
                     grouped[key].append(r)
+
+                debugGroups = grouped
 
                 for key, groupedRows in grouped.items():
                     result.append({
@@ -123,7 +129,8 @@ def register(app):
                             for r in groupedRows
                         ]
                 })
-            return jsonify(result)
+            #return jsonify(result)
+            return jsonify({"data": result, "report_ids": ids, "debug_rows": debgRows, "debug_groups": debugGroups})
 
         except Exception as e:
             import traceback
