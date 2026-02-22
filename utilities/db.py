@@ -110,7 +110,7 @@ def storeOffers(device_id, offers):
         return "; ".join(parse_errors)
     return None
 
-def addDevice(device_id, name, info, device, offer):
+def addDevice(device_id, name, info, device, offers):
     addNewDevice(device_id, name, info, device)
     error = storeOffers(device_id, offers)
     if error:
