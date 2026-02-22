@@ -14,14 +14,29 @@ MQTT_KEEPALIVE = 60
 _client = None
 
 def subscribe(topic, qos=0):
-    if _client and topic not in _subscriptions:
-        _client.subscribe(topic, qos=qos)
-        _subscriptions.add(topic)
+    if _client:
+        for attempt in range(3):
+            result, _ = _client.subscribe(topic, qos=qos)
+            if result == mqtt.MQTT_ERR_SUCCESS:
+                break
+            elif attempt < 2:
+                import time
+                time.sleep(0.5)
+            else:
+                print(f"MQTT subscribe failed for {topic} after 3 attempts (result={result})")
+
 
 def unsubscribe(topic):
-    if _client and topic in _subscriptions:
-        _client.unsubscribe(topic)
-        _subscriptions.remove(topic)
+    if _client:
+        for attempt in range(3):
+            result, _ = _client.unsubscribe(topic)
+            if result == mqtt.MQTT_ERR_SUCCESS:
+                break
+            elif attempt < 2:
+                import time
+                time.sleep(0.5)
+            else:
+                print(f"MQTT unsubscribe failed for {topic} after 3 attempts (result={result})")
 
 def unsubscribeState(device_id, topic_name):
     unsubscribe(f"{device_id}/{topic_name}/state")
