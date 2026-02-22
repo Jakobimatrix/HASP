@@ -419,10 +419,7 @@ function renderChart(mode, data) {
 
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
-            let chartIdx = 0;
-            if (split){
-                chartIdx = i;
-            }
+            const chartIdx = i;
             const defaultType = "line";
             const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
             container.appendChild(dropdown);
@@ -430,20 +427,38 @@ function renderChart(mode, data) {
             canvas.style.marginBottom = "40px";
             container.appendChild(canvas);
             const ctx = canvas.getContext("2d");
-            const chart = new Chart(ctx, {
+            let chart = null;
+            if (split){
+                chart = new Chart(ctx, {
+                    type: defaultType,
+                    data: {
+                        datasets: [{
+                            label: `${s.device_id}:${s.key}`,
+                            data: transformX(s.points),
+                        }]
+                    },
+                    options: {
+                        plugins: { zoom: getZoomOptions(), ...plugins },
+                        scales: { x: xScale, y: yScale }
+                    }
+                });
+                charts.push(chart);
+                continue;
+            }
+            chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
-                    datasets: [{
+                    datasets: data.map(s => ({
                         label: `${s.device_id}:${s.key}`,
                         data: transformX(s.points),
-                    }]
+                    }))
                 },
                 options: {
                     plugins: { zoom: getZoomOptions(), ...plugins },
                     scales: { x: xScale, y: yScale }
                 }
             });
-            charts.push(chart);
+            break; // all data in 1 chart
         }
         
         saveZoomState();
