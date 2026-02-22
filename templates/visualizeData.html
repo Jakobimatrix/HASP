@@ -262,8 +262,6 @@ function renderChart(mode, data) {
         return select;
     }
 
-    const split = document.getElementById("splitPlots").checked;
-    const container = document.getElementById("chartContainer");
 
     function handleChartTypeChange(e) {
         const idx = parseInt(e.target.dataset.chartIdx);
@@ -295,7 +293,9 @@ function renderChart(mode, data) {
         chart.update();
     }
 
+    const container = document.getElementById("chartContainer");
     if (mode === "independent") {
+        const split = document.getElementById("splitPlots").checked;
         const removeOffset = document.getElementById("removeOffsetToggle").checked;
         const xAxisMode = document.getElementById("xAxisMode").value;
         const logYAxis = document.getElementById("logYAxisToggle").checked;
@@ -484,7 +484,6 @@ function renderChart(mode, data) {
             };
         }
         
-        // Support multiple datasets if backend returns multiple entries
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
             let chartIdx = 0;

@@ -151,14 +151,19 @@ def getXYSeries(device_id: str, x_key: str, y_key: str):
         return con.execute(
             """
             SELECT
+                x.ts_sec,
+                x.ts_nsec,
                 x.value_num AS x,
                 y.value_num AS y
             FROM measurements x
             JOIN measurements y
-              ON x.device_id = y.device_id
+            ON x.device_id = y.device_id
+            AND x.ts_sec = y.ts_sec
+            AND x.ts_nsec = y.ts_nsec
             WHERE x.device_id = ?
-              AND x.key = ?
-              AND y.key = ?
+            AND x.key = ?
+            AND y.key = ?
+            ORDER BY x.ts_sec, x.ts_nsec
             """,
             (device_id, x_key, y_key),
         ).fetchall()

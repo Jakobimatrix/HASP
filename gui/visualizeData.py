@@ -78,8 +78,8 @@ def register(app):
                     "x_key": x_key,
                     "y_key": y_key,
                     "points": [
-                    {"x": r[0], "y": r[1]}
-                    for r in rows
+                        {"x": r[0], "y": r[1]}
+                        for r in rows
                     ]
                 })
             else:
