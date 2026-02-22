@@ -102,19 +102,16 @@ def register(app):
                 # Group by (device_id, key)
                 grouped = {}
                 for r in rows:
-                    ts_sec, ts_nsec, value, device_id, key = r
-                    group_key = (device_id, key)
-                    if group_key not in grouped:
-                        grouped[group_key] = []
-                    grouped[group_key].append({
-                        "t": ts_sec + ts_nsec / 1e9,
-                        "v": float(value) if isinstance(value, (int, float)) else value,
-                    })
-                for (device_id, key), points in grouped.items():
+                    ts_sec = r[0]
+                    ts_nsec = r[1]
+                    value = r[2]
+                    device_id = r[3]
+                    key = r[4]
                     result.append({
+                        "t": ts_sec + ts_nsec / 1e9,
+                        "v": float(value),
                         "device_id": device_id,
-                        "key": key,
-                        "points": points
+                        "key": key
                     })
             return jsonify(result)
 

@@ -163,20 +163,32 @@ def getXYSeries(device_id: str, x_key: str, y_key: str):
             (device_id, x_key, y_key),
         ).fetchall()
 
-def getTimeSeriesViaReportId(report_id: str):
-    with getDB() as con:
-        return con.execute(
-            """
-            SELECT ts_sec, ts_nsec,
-                   COALESCE(value_num, value_int, value_text, value_bool) AS value,
-                   device_id,
-                   key
-            FROM measurements
-            WHERE report_id = ?
-            ORDER BY ts_sec, ts_nsec
-            """,
-            (report_id,),
-        ).fetchall()
+def getTimeSeriesViaReportId(report_id: str, device_id: str = None):
+    if device_id is not None:
+        with getDB() as con:
+            return con.execute(
+                """
+                SELECT ts_sec, ts_nsec, device_id, key,
+                    COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                FROM measurements
+                WHERE report_id = ?
+                ORDER BY ts_sec, ts_nsec
+                """,
+                (report_id),
+            ).fetchall()
+    else:
+        with getDB() as con:
+            return con.execute(
+                """
+                SELECT ts_sec, ts_nsec, key,
+                    COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                FROM measurements
+                WHERE report_id = ?
+                  AND device_id = ?
+                ORDER BY ts_sec, ts_nsec
+                """,
+                (report_id, device_id),
+            ).fetchall()
 
 def removeDeviceData(device_id):
     with getDB() as con:

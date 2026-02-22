@@ -109,9 +109,9 @@ async function loadKeys() {
 
     const source = document.getElementById("sourceSelect").value;
     let api_call = "";
-    if( source === "report_id") {
+    if (source === "report_id") {
         api_call = "/api/get/reportedValues/report_ids";
-    } else if( source   === "device_id" ){
+    } else if( source === "device_id" ){
         api_call = "/api/get/reportedValues/keys";
     }
 
@@ -239,7 +239,6 @@ function renderChart(mode, data) {
         { value: "line-noline", label: "Line (showLine = false)" },
         { value: "bar", label: "Bar Chart" },
         { value: "bubble", label: "Bubble Chart" },
-        { value: "doughnut", label: "Doughnut" },
         { value: "scatter", label: "Scatter" }
     ];
 
@@ -300,22 +299,9 @@ function renderChart(mode, data) {
         }
 
         let xScale = {};
-        let plugins = {};
         if (xAxisMode === "date") {
             xScale = {
                 type: "time",
-                time: {
-                    unit: "minute",
-                    tooltipFormat: "yyyy-MM-dd HH:mm:ss",
-                    displayFormats: {
-                        minute: "yyyy-MM-dd HH:mm",
-                        hour: "yyyy-MM-dd HH:mm",
-                        day: "yyyy-MM-dd HH:mm",
-                        week: "yyyy-MM-dd HH:mm",
-                        month: "yyyy-MM-dd HH:mm",
-                        year: "yyyy-MM-dd HH:mm"
-                    }
-                },
                 title: { display: true, text: xLabel }
             };
         } else {
@@ -323,21 +309,38 @@ function renderChart(mode, data) {
                 type: "linear",
                 title: { display: true, text: xLabel }
             };
-            plugins = {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let x = context.parsed.x;
+        }
+
+        const plugins = {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        // context.parsed contains the return value of transform
+                        // context.raw contains the original data point {t, v} and device_id, key if available
+                        let x = context.parsed.x;
+                        const scaleType = context.chart.scales.x.type;
+                        let formatted = x;
+                        if (scaleType === "time" || xAxisMode === "date") {
+                            let date = new Date(x);
+                            let pad = n => n.toString().padStart(2, '0');
+                            formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+                        } else {
+                            // Linear scale: x is seconds or ms, convert if needed
                             if (["milliseconds"].includes(xAxisMode)) x = x / 1000;
                             let date = new Date(x * 1000);
                             let pad = n => n.toString().padStart(2, '0');
-                            let formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-                            return `${context.dataset.label || ''} (x: ${formatted}, y: ${context.parsed.y})`;
+                            formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
                         }
+                        // Add device_id and key if available in raw point
+                        let extra = "";
+                        if (context.raw && context.raw.device_id && context.raw.key) {
+                            extra = ` [${context.raw.device_id}:${context.raw.key}]`;
+                        }
+                        return `${context.dataset.label || ''}${extra} (x: ${formatted}, y: ${context.parsed.y})`;
                     }
                 }
-            };
-        }
+            }
+        };
 
         let yScale = {};
         if (logYAxis) {
