@@ -154,8 +154,8 @@ def onMessage(client, userdata, msg):
 def startMqtt():
     global _client
     _client = mqtt.Client()
-    _client.on_connect = on_connect
-    _client.on_message = on_message
+    _client.on_connect = onConnect
+    _client.on_message = onMessage
 
     _client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
 
