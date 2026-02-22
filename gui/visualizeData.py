@@ -67,7 +67,7 @@ def register(app):
                                 for r in rows
                             ]
                         })
-            if mode == "xy":
+            else if mode == "xy":
                 id = data["device_id"]
 
                 x_key = data["x_key"]

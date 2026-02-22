@@ -197,15 +197,16 @@ async function loadPlot() {
     });
 
     const data = await res.json();
+    console.log("Plot request payload:", payload);
+    console.log("Plot response:", res);
+    console.log("Received data series:", data);
+
     if (!Array.isArray(data)) {
         console.error("Expected array, got:", data);
         alert("Backend error – see console");
         return;
     }
     lastSeries = data; 
-    console.log("Plot request payload:", payload);
-    console.log("Plot response:", res);
-    console.log("Received data series:", data);
     renderChart(mode, data);
 }
 
@@ -450,7 +451,7 @@ function renderChart(mode, data) {
     }
 
     // XY mode
-    if (mode === "xy") {
+    else if (mode === "xy") {
         const container = document.getElementById("chartContainer");
         // Support multiple datasets if backend returns multiple entries
         for (let i = 0; i < data.length; i++) {
@@ -517,7 +518,7 @@ function renderChart(mode, data) {
         saveZoomState();
         return;
     }
-    alert("Invalid mode:" + mode);
+    alert("Invalid mode: '" + mode + "'");
 }
 // Zoom/pan controls
 function setZoomMode(mode) {
