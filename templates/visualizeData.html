@@ -262,14 +262,45 @@ function renderChart(mode, data) {
         return select;
     }
 
+    const split = document.getElementById("splitPlots").checked;
+    const container = document.getElementById("chartContainer");
+
+    function handleChartTypeChange(e) {
+        const idx = parseInt(e.target.dataset.chartIdx);
+        const chart = charts[idx];
+        const type = e.target.value;
+        // Update chart type and options
+        let newType = type;
+        let fill = false;
+        let showLine = true;
+        if (type === "line-fill") {
+            newType = "line";
+            fill = true;
+        } else if (type === "line-noline") {
+            newType = "line";
+            showLine = false;
+        }
+        chart.config.type = newType;
+        if (chart.config.type === "line") {
+            chart.data.datasets.forEach(ds => {
+                ds.fill = fill;
+                ds.showLine = showLine;
+            });
+        } else {
+            chart.data.datasets.forEach(ds => {
+                ds.fill = undefined;
+                ds.showLine = undefined;
+            });
+        }
+        chart.update();
+    }
+
     if (mode === "independent") {
-        const split = document.getElementById("splitPlots").checked;
-        const container = document.getElementById("chartContainer");
         const removeOffset = document.getElementById("removeOffsetToggle").checked;
         const xAxisMode = document.getElementById("xAxisMode").value;
         const logYAxis = document.getElementById("logYAxisToggle").checked;
         const syncX = document.getElementById("syncXZoomToggle").checked;
-
+        
         function transformX(points) {
             if (!points.length) return points;
             let offset = removeOffset ? points[0].t : 0;
@@ -363,7 +394,7 @@ function renderChart(mode, data) {
             return {
                 pan: { enabled: true, mode: zoomMode },
                 zoom: {
-                    wheel: { enabled: true },
+                    wheel: { enabled: false },
                     pinch: { enabled: true },
                     mode: zoomMode,
                     drag: { enabled: true },
@@ -384,37 +415,6 @@ function renderChart(mode, data) {
                     c.update();
                 }
             });
-        }
-
-        // Chart type change handler
-        function handleChartTypeChange(e) {
-            const idx = parseInt(e.target.dataset.chartIdx);
-            const chart = charts[idx];
-            const type = e.target.value;
-            // Update chart type and options
-            let newType = type;
-            let fill = false;
-            let showLine = true;
-            if (type === "line-fill") {
-                newType = "line";
-                fill = true;
-            } else if (type === "line-noline") {
-                newType = "line";
-                showLine = false;
-            }
-            chart.config.type = newType;
-            if (chart.config.type === "line") {
-                chart.data.datasets.forEach(ds => {
-                    ds.fill = fill;
-                    ds.showLine = showLine;
-                });
-            } else {
-                chart.data.datasets.forEach(ds => {
-                    ds.fill = undefined;
-                    ds.showLine = undefined;
-                });
-            }
-            chart.update();
         }
 
         for (let i = 0; i < data.length; i++) {
@@ -453,6 +453,22 @@ function renderChart(mode, data) {
     // XY mode
     else if (mode === "xy") {
         const container = document.getElementById("chartContainer");
+
+        function getZoomOptions() {
+            return {
+                pan: { enabled: true, mode: zoomMode },
+                zoom: {
+                    wheel: { enabled: false },
+                    pinch: { enabled: true },
+                    mode: zoomMode,
+                    drag: { enabled: true },
+                    onZoom: undefined,
+                    onZoomComplete: saveZoomState
+                },
+                limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
+            };
+        }
+        
         // Support multiple datasets if backend returns multiple entries
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
@@ -461,33 +477,7 @@ function renderChart(mode, data) {
                 chartIdx = i;
             }
             const defaultType = "scatter";
-            const dropdown = createChartTypeDropdown(defaultType, chartIdx, function(e) {
-                const chart = charts[chartIdx];
-                const type = e.target.value;
-                let newType = type;
-                let fill = false;
-                let showLine = true;
-                if (type === "line-fill") {
-                    newType = "line";
-                    fill = true;
-                } else if (type === "line-noline") {
-                    newType = "line";
-                    showLine = false;
-                }
-                chart.config.type = newType;
-                if (chart.config.type === "line") {
-                    chart.data.datasets.forEach(ds => {
-                        ds.fill = fill;
-                        ds.showLine = showLine;
-                    });
-                } else {
-                    chart.data.datasets.forEach(ds => {
-                        ds.fill = undefined;
-                        ds.showLine = undefined;
-                    });
-                }
-                chart.update();
-            });
+            const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             container.appendChild(canvas);
@@ -501,12 +491,7 @@ function renderChart(mode, data) {
                     }]
                 },
                 options: {
-                    plugins: {
-                        zoom: {
-                            pan: { enabled: true, mode: zoomMode },
-                            zoom: { wheel: { enabled: false }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
-                        }
-                    },
+                    plugins: { zoom: getZoomOptions()},
                     scales: {
                         x: { title: { display: true, text: s.x_key || "X" } },
                         y: { title: { display: true, text: s.y_key || "Y" } }
