@@ -232,6 +232,33 @@ function renderChart(mode, data) {
         zoomHistoryIndex++;
     }
 
+    // Chart type options
+    const chartTypeOptions = [
+        { value: "line", label: "Line" },
+        { value: "line-fill", label: "Line (Fill)" },
+        { value: "line-noline", label: "Line (showLine = false)" },
+        { value: "bar", label: "Bar Chart" },
+        { value: "bubble", label: "Bubble Chart" },
+        { value: "doughnut", label: "Doughnut" },
+        { value: "scatter", label: "Scatter" }
+    ];
+
+    function createChartTypeDropdown(defaultType, idx, onChange) {
+        const select = document.createElement("select");
+        select.className = "form-select form-select-sm mb-2";
+        select.style.width = "auto";
+        select.dataset.chartIdx = idx;
+        chartTypeOptions.forEach(opt => {
+            const option = document.createElement("option");
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (opt.value === defaultType) option.selected = true;
+            select.appendChild(option);
+        });
+        select.addEventListener("change", onChange);
+        return select;
+    }
+
     if (mode === "independent") {
         const split = document.getElementById("splitPlots").checked;
         const container = document.getElementById("chartContainer");
@@ -240,43 +267,25 @@ function renderChart(mode, data) {
         const logYAxis = document.getElementById("logYAxisToggle").checked;
         const syncX = document.getElementById("syncXZoomToggle").checked;
 
-        // Helper to transform x values
         function transformX(points) {
             if (!points.length) return points;
             let offset = removeOffset ? points[0].t : 0;
             return points.map(p => {
                 let x = p.t - offset;
                 switch (xAxisMode) {
-                    case "milliseconds":
-                        x = x * 1000;
-                        break;
-                    case "minutes":
-                        x = x / 60;
-                        break;
-                    case "hours":
-                        x = x / 3600;
-                        break;
-                    case "days":
-                        x = x / 86400;
-                        break;
-                    case "weeks":
-                        x = x / (86400 * 7);
-                        break;
-                    case "months":
-                        x = x / (86400 * 30.4375); // average month
-                        break;
-                    case "years":
-                        x = x / (86400 * 365.25); // average year
-                        break;
-                    case "date":
-                        x = (p.t) * 1000; // p.t is seconds
-                        break;
+                    case "milliseconds": x = x * 1000; break;
+                    case "minutes": x = x / 60; break;
+                    case "hours": x = x / 3600; break;
+                    case "days": x = x / 86400; break;
+                    case "weeks": x = x / (86400 * 7); break;
+                    case "months": x = x / (86400 * 30.4375); break;
+                    case "years": x = x / (86400 * 365.25); break;
+                    case "date": x = (p.t) * 1000; break;
                 }
                 return { x, y: p.v };
             });
         }
 
-        // x axis label
         let xLabel = "Date";
         switch (xAxisMode) {
             case "seconds": xLabel = "Time (s)"; break;
@@ -291,6 +300,7 @@ function renderChart(mode, data) {
         }
 
         let xScale = {};
+        let plugins = {};
         if (xAxisMode === "date") {
             xScale = {
                 type: "time",
@@ -313,6 +323,20 @@ function renderChart(mode, data) {
                 type: "linear",
                 title: { display: true, text: xLabel }
             };
+            plugins = {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let x = context.parsed.x;
+                            if (["milliseconds"].includes(xAxisMode)) x = x / 1000;
+                            let date = new Date(x * 1000);
+                            let pad = n => n.toString().padStart(2, '0');
+                            let formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+                            return `${context.dataset.label || ''} (x: ${formatted}, y: ${context.parsed.y})`;
+                        }
+                    }
+                }
+            };
         }
 
         let yScale = {};
@@ -328,13 +352,9 @@ function renderChart(mode, data) {
             };
         }
 
-        // Chart.js zoom options
         function getZoomOptions() {
             return {
-                pan: {
-                    enabled: true,
-                    mode: zoomMode,
-                },
+                pan: { enabled: true, mode: zoomMode },
                 zoom: {
                     wheel: { enabled: true },
                     pinch: { enabled: true },
@@ -343,14 +363,10 @@ function renderChart(mode, data) {
                     onZoom: syncX ? syncXZoom : undefined,
                     onZoomComplete: saveZoomState
                 },
-                limits: {
-                    x: { minRange: 0.0001 },
-                    y: { minRange: 0.0001 }
-                }
+                limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
             };
         }
 
-        // Synchronize X zoom for all charts
         function syncXZoom({chart}) {
             if (!syncX) return;
             const xScale = chart.scales.x;
@@ -363,14 +379,48 @@ function renderChart(mode, data) {
             });
         }
 
+        // Chart type change handler
+        function handleChartTypeChange(e) {
+            const idx = parseInt(e.target.dataset.chartIdx);
+            const chart = charts[idx];
+            const type = e.target.value;
+            // Update chart type and options
+            let newType = type;
+            let fill = false;
+            let showLine = true;
+            if (type === "line-fill") {
+                newType = "line";
+                fill = true;
+            } else if (type === "line-noline") {
+                newType = "line";
+                showLine = false;
+            }
+            chart.config.type = newType;
+            if (chart.config.type === "line") {
+                chart.data.datasets.forEach(ds => {
+                    ds.fill = fill;
+                    ds.showLine = showLine;
+                });
+            } else {
+                chart.data.datasets.forEach(ds => {
+                    ds.fill = undefined;
+                    ds.showLine = undefined;
+                });
+            }
+            chart.update();
+        }
+
         if (!split) {
             // ONE chart, many datasets
+            const chartIdx = 0;
+            const defaultType = "line";
+            const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
+            container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             container.appendChild(canvas);
-
             const ctx = canvas.getContext("2d");
             const chart = new Chart(ctx, {
-                type: "line",
+                type: defaultType,
                 data: {
                     datasets: data.map(s => ({
                         label: `${s.device_id}:${s.key}`,
@@ -378,26 +428,25 @@ function renderChart(mode, data) {
                     }))
                 },
                 options: {
-                    plugins: {
-                        zoom: getZoomOptions()
-                    },
-                    scales: {
-                        x: xScale,
-                        y: yScale
-                    }
+                    plugins: { zoom: getZoomOptions(), ...plugins },
+                    scales: { x: xScale, y: yScale }
                 }
             });
             charts.push(chart);
         } else {
             // MULTIPLE charts
-            for (const s of data) {
+            for (let i = 0; i < data.length; i++) {
+                const s = data[i];
+                const chartIdx = i;
+                const defaultType = "line";
+                const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
+                container.appendChild(dropdown);
                 const canvas = document.createElement("canvas");
                 canvas.style.marginBottom = "40px";
                 container.appendChild(canvas);
-
                 const ctx = canvas.getContext("2d");
                 const chart = new Chart(ctx, {
-                    type: "line",
+                    type: defaultType,
                     data: {
                         datasets: [{
                             label: `${s.device_id}:${s.key}`,
@@ -405,13 +454,8 @@ function renderChart(mode, data) {
                         }]
                     },
                     options: {
-                        plugins: {
-                            zoom: getZoomOptions()
-                        },
-                        scales: {
-                            x: xScale,
-                            y: yScale
-                        }
+                        plugins: { zoom: getZoomOptions(), ...plugins },
+                        scales: { x: xScale, y: yScale }
                     }
                 });
                 charts.push(chart);
@@ -421,12 +465,42 @@ function renderChart(mode, data) {
         return;
     }
 
-    // XY mode (unchanged)
+    // XY mode
+    const container = document.getElementById("chartContainer");
+    const chartIdx = 0;
+    const defaultType = "scatter";
+    const dropdown = createChartTypeDropdown(defaultType, chartIdx, function(e) {
+        const chart = charts[0];
+        const type = e.target.value;
+        let newType = type;
+        let fill = false;
+        let showLine = true;
+        if (type === "line-fill") {
+            newType = "line";
+            fill = true;
+        } else if (type === "line-noline") {
+            newType = "line";
+            showLine = false;
+        }
+        chart.config.type = newType;
+        if (chart.config.type === "line") {
+            chart.data.datasets.forEach(ds => {
+                ds.fill = fill;
+                ds.showLine = showLine;
+            });
+        } else {
+            chart.data.datasets.forEach(ds => {
+                ds.fill = undefined;
+                ds.showLine = undefined;
+            });
+        }
+        chart.update();
+    });
+    container.appendChild(dropdown);
     const canvas = document.createElement("canvas");
-    document.getElementById("chartContainer").appendChild(canvas);
-
+    container.appendChild(canvas);
     const chart = new Chart(canvas.getContext("2d"), {
-        type: "scatter",
+        type: defaultType,
         data: {
             datasets: [{ label: "XY", data }]
         },
