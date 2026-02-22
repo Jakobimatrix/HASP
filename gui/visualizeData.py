@@ -103,17 +103,25 @@ def register(app):
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-                result.append({
-                    "device_id": r[3] + ":" + id,
-                    "key": r[4] + ":" + id,
-                    "points": [
-                        {
-                            "t": r[0] + r[1] / 1e9,
-                            "v": float(r[2]),
+                grouped = {}
+                for r in rows:
+                    key = r[3] + ":" + r[4]  # device_id:key
+                    if key not in grouped:
+                        grouped[key] = []
+                    grouped[key].append(r)
 
-                        }
-                        for r in rows
-                    ]
+                for key, rows in grouped.items():
+                    result.append({
+                        "device_id": rows[0][3] + ":" + id,
+                        "key": rows[0][4] + ":" + id,
+                        "points": [
+                            {
+                                "t": r[0] + r[1] / 1e9,
+                                "v": float(r[2]),
+
+                            }
+                            for r in rows
+                        ]
                 })
             return jsonify(result)
 
