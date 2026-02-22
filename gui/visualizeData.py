@@ -49,11 +49,10 @@ def register(app):
         try:
             data = request.get_json(force=True)
             mode = data["mode"]
-
+            result = []
             if mode == "independent":
                 device_ids = data["device_ids"]
                 keys = data["keys"]
-                result = []
                 for device_id in device_ids:
                     for key in keys:
                         rows = getTimeSeries(device_id, key)
@@ -68,8 +67,6 @@ def register(app):
                                 for r in rows
                             ]
                         })
-                return jsonify(result)
-
             if mode == "xy":
                 id = data["device_id"]
 
@@ -77,12 +74,19 @@ def register(app):
                 y_key = data["y_key"]
 
                 rows = getXYSeries(id, x_key, y_key)
-                return jsonify([
+                result.append({
+                    "x_key": x_key,
+                    "y_key": y_key,
+                    "points": [
                     {"x": r[0], "y": r[1]}
                     for r in rows
-                ])
+                    ]
+                })
+            else:
+                return jsonify({"error": "invalid mode"}), 400
 
-            return jsonify({"error": "invalid mode"}), 400
+            return jsonify(result)
+
 
         except Exception as e:
             import traceback
@@ -99,20 +103,18 @@ def register(app):
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-                # Group by (device_id, key)
-                grouped = {}
-                for r in rows:
-                    ts_sec = r[0]
-                    ts_nsec = r[1]
-                    value = r[2]
-                    device_id = r[3]
-                    key = r[4]
-                    result.append({
-                        "t": ts_sec + ts_nsec / 1e9,
-                        "v": float(value),
-                        "device_id": device_id,
-                        "key": key
-                    })
+                result.append({
+                    "device_id": r[3] + ":" + id,
+                    "key": r[4] + ":" + id,
+                    "points": [
+                        {
+                            "t": r[0] + r[1] / 1e9,
+                            "v": float(r[2]),
+
+                        }
+                        for r in rows
+                    ]
+                })
             return jsonify(result)
 
         except Exception as e:

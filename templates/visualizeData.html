@@ -203,6 +203,9 @@ async function loadPlot() {
         return;
     }
     lastSeries = data; 
+    console.log("Plot request payload:", payload);
+    console.log("Plot response:", res);
+    console.log("Received data series:", data);
     renderChart(mode, data);
 }
 
@@ -413,22 +416,26 @@ function renderChart(mode, data) {
             chart.update();
         }
 
-        if (!split) {
-            // ONE chart, many datasets
-            const chartIdx = 0;
+        for (let i = 0; i < data.length; i++) {
+            const s = data[i];
+            let chartIdx = 0;
+            if (split){
+                chartIdx = i;
+            }
             const defaultType = "line";
             const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
+            canvas.style.marginBottom = "40px";
             container.appendChild(canvas);
             const ctx = canvas.getContext("2d");
             const chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
-                    datasets: data.map(s => ({
+                    datasets: [{
                         label: `${s.device_id}:${s.key}`,
                         data: transformX(s.points),
-                    }))
+                    }]
                 },
                 options: {
                     plugins: { zoom: getZoomOptions(), ...plugins },
@@ -436,92 +443,81 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-        } else {
-            // MULTIPLE charts
-            for (let i = 0; i < data.length; i++) {
-                const s = data[i];
-                const chartIdx = i;
-                const defaultType = "line";
-                const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
-                container.appendChild(dropdown);
-                const canvas = document.createElement("canvas");
-                canvas.style.marginBottom = "40px";
-                container.appendChild(canvas);
-                const ctx = canvas.getContext("2d");
-                const chart = new Chart(ctx, {
-                    type: defaultType,
-                    data: {
-                        datasets: [{
-                            label: `${s.device_id}:${s.key}`,
-                            data: transformX(s.points),
-                        }]
-                    },
-                    options: {
-                        plugins: { zoom: getZoomOptions(), ...plugins },
-                        scales: { x: xScale, y: yScale }
-                    }
-                });
-                charts.push(chart);
-            }
         }
+        
         saveZoomState();
         return;
     }
 
     // XY mode
-    const container = document.getElementById("chartContainer");
-    const chartIdx = 0;
-    const defaultType = "scatter";
-    const dropdown = createChartTypeDropdown(defaultType, chartIdx, function(e) {
-        const chart = charts[0];
-        const type = e.target.value;
-        let newType = type;
-        let fill = false;
-        let showLine = true;
-        if (type === "line-fill") {
-            newType = "line";
-            fill = true;
-        } else if (type === "line-noline") {
-            newType = "line";
-            showLine = false;
-        }
-        chart.config.type = newType;
-        if (chart.config.type === "line") {
-            chart.data.datasets.forEach(ds => {
-                ds.fill = fill;
-                ds.showLine = showLine;
-            });
-        } else {
-            chart.data.datasets.forEach(ds => {
-                ds.fill = undefined;
-                ds.showLine = undefined;
-            });
-        }
-        chart.update();
-    });
-    container.appendChild(dropdown);
-    const canvas = document.createElement("canvas");
-    container.appendChild(canvas);
-    const chart = new Chart(canvas.getContext("2d"), {
-        type: defaultType,
-        data: {
-            datasets: [{ label: "XY", data }]
-        },
-        options: {
-            plugins: {
-                zoom: {
-                    pan: { enabled: true, mode: zoomMode },
-                    zoom: { wheel: { enabled: false }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
-                }
-            },
-            scales: {
-                x: { title: { display: true, text: "X" } },
-                y: { title: { display: true, text: "Y" } }
+    if (mode === "xy") {
+        const container = document.getElementById("chartContainer");
+        // Support multiple datasets if backend returns multiple entries
+        for (let i = 0; i < data.length; i++) {
+            const s = data[i];
+            let chartIdx = 0;
+            if (split){
+                chartIdx = i;
             }
+            const defaultType = "scatter";
+            const dropdown = createChartTypeDropdown(defaultType, chartIdx, function(e) {
+                const chart = charts[chartIdx];
+                const type = e.target.value;
+                let newType = type;
+                let fill = false;
+                let showLine = true;
+                if (type === "line-fill") {
+                    newType = "line";
+                    fill = true;
+                } else if (type === "line-noline") {
+                    newType = "line";
+                    showLine = false;
+                }
+                chart.config.type = newType;
+                if (chart.config.type === "line") {
+                    chart.data.datasets.forEach(ds => {
+                        ds.fill = fill;
+                        ds.showLine = showLine;
+                    });
+                } else {
+                    chart.data.datasets.forEach(ds => {
+                        ds.fill = undefined;
+                        ds.showLine = undefined;
+                    });
+                }
+                chart.update();
+            });
+            container.appendChild(dropdown);
+            const canvas = document.createElement("canvas");
+            container.appendChild(canvas);
+            const ctx = canvas.getContext("2d");
+            const chart = new Chart(ctx, {
+                type: defaultType,
+                data: {
+                    datasets: [{
+                        label: `${s.x_key || 'X'}:${s.y_key || 'Y'}`,
+                        data: s.points
+                    }]
+                },
+                options: {
+                    plugins: {
+                        zoom: {
+                            pan: { enabled: true, mode: zoomMode },
+                            zoom: { wheel: { enabled: false }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: s.x_key || "X" } },
+                        y: { title: { display: true, text: s.y_key || "Y" } }
+                    }
+                }
+            });
+            charts.push(chart);
         }
-    });
-    charts.push(chart);
-    saveZoomState();
+        saveZoomState();
+        return;
+    }
+    alert("Invalid mode:" + mode);
 }
 // Zoom/pan controls
 function setZoomMode(mode) {
