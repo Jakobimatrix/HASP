@@ -1,6 +1,10 @@
 {% from '_header.html' import header %}
 {% from '_footer.html' import footer %}
-{{ header(current_user=current_user, is_admin=is_admin, page_title="Visualize Device Data", scripts=["https://cdn.jsdelivr.net/npm/chart.js", "https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"]) }}
+{{ header(current_user=current_user, is_admin=is_admin, page_title="Visualize Device Data", scripts=[
+    "https://cdn.jsdelivr.net/npm/chart.js",
+    "https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns",
+    "https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@^2.0.0"
+]) }}
 <div class="container mt-4">
     <h1 class="mb-4">Visualize Device Data</h1>
     <div class="row mb-3">
@@ -50,6 +54,18 @@
                 <option value="months">Months</option>
                 <option value="years">Years</option>
             </select>
+        </div>
+        <div class="form-check form-switch ms-3">
+            <input class="form-check-input" type="checkbox" id="syncXZoomToggle">
+            <label class="form-check-label" for="syncXZoomToggle">Synchronize X zoom</label>
+        </div>
+        <div class="ms-3 d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" id="zoomXBtn">Zoom X</button>
+            <button class="btn btn-outline-secondary btn-sm" id="zoomYBtn">Zoom Y</button>
+            <button class="btn btn-outline-secondary btn-sm" id="zoomXYBtn">Zoom XY</button>
+            <button class="btn btn-outline-secondary btn-sm" id="undoZoomBtn">Undo</button>
+            <button class="btn btn-outline-secondary btn-sm" id="redoZoomBtn">Redo</button>
+            <button class="btn btn-outline-secondary btn-sm" id="resetZoomBtn">Reset</button>
         </div>
         <div class="ms-3">
             <select id="sourceSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
@@ -190,15 +206,30 @@ async function loadPlot() {
 }
 
 let charts = [];
+let zoomMode = 'xy'; // default zoom mode
+let zoomHistory = [];
+let zoomHistoryIndex = -1;
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
     charts = [];
     document.getElementById("chartContainer").innerHTML = "";
+    zoomHistory = [];
+    zoomHistoryIndex = -1;
 }
 
 function renderChart(mode, data) {
     clearCharts();
+
+    // Helper for zoom state
+    function saveZoomState() {
+        zoomHistory = zoomHistory.slice(0, zoomHistoryIndex + 1);
+        zoomHistory.push(charts.map(c => ({
+            x: c.scales.x.min !== undefined || c.scales.x.max !== undefined ? { min: c.scales.x.min, max: c.scales.x.max } : null,
+            y: c.scales.y.min !== undefined || c.scales.y.max !== undefined ? { min: c.scales.y.min, max: c.scales.y.max } : null
+        })));
+        zoomHistoryIndex++;
+    }
 
     if (mode === "independent") {
         const split = document.getElementById("splitPlots").checked;
@@ -206,6 +237,7 @@ function renderChart(mode, data) {
         const removeOffset = document.getElementById("removeOffsetToggle").checked;
         const xAxisMode = document.getElementById("xAxisMode").value;
         const logYAxis = document.getElementById("logYAxisToggle").checked;
+        const syncX = document.getElementById("syncXZoomToggle").checked;
 
         // Helper to transform x values
         function transformX(points) {
@@ -295,13 +327,48 @@ function renderChart(mode, data) {
             };
         }
 
+        // Chart.js zoom options
+        function getZoomOptions() {
+            return {
+                pan: {
+                    enabled: true,
+                    mode: zoomMode,
+                },
+                zoom: {
+                    wheel: { enabled: true },
+                    pinch: { enabled: true },
+                    mode: zoomMode,
+                    drag: { enabled: true },
+                    onZoom: syncX ? syncXZoom : undefined,
+                    onZoomComplete: saveZoomState
+                },
+                limits: {
+                    x: { minRange: 0.0001 },
+                    y: { minRange: 0.0001 }
+                }
+            };
+        }
+
+        // Synchronize X zoom for all charts
+        function syncXZoom({chart}) {
+            if (!syncX) return;
+            const xScale = chart.scales.x;
+            charts.forEach(c => {
+                if (c !== chart) {
+                    c.scales.x.options.min = xScale.min;
+                    c.scales.x.options.max = xScale.max;
+                    c.update();
+                }
+            });
+        }
+
         if (!split) {
             // ONE chart, many datasets
             const canvas = document.createElement("canvas");
             container.appendChild(canvas);
 
             const ctx = canvas.getContext("2d");
-            charts.push(new Chart(ctx, {
+            const chart = new Chart(ctx, {
                 type: "line",
                 data: {
                     datasets: data.map(s => ({
@@ -310,12 +377,16 @@ function renderChart(mode, data) {
                     }))
                 },
                 options: {
+                    plugins: {
+                        zoom: getZoomOptions()
+                    },
                     scales: {
                         x: xScale,
                         y: yScale
                     }
                 }
-            }));
+            });
+            charts.push(chart);
         } else {
             // MULTIPLE charts
             for (const s of data) {
@@ -324,7 +395,7 @@ function renderChart(mode, data) {
                 container.appendChild(canvas);
 
                 const ctx = canvas.getContext("2d");
-                charts.push(new Chart(ctx, {
+                const chart = new Chart(ctx, {
                     type: "line",
                     data: {
                         datasets: [{
@@ -333,14 +404,19 @@ function renderChart(mode, data) {
                         }]
                     },
                     options: {
+                        plugins: {
+                            zoom: getZoomOptions()
+                        },
                         scales: {
                             x: xScale,
                             y: yScale
                         }
                     }
-                }));
+                });
+                charts.push(chart);
             }
         }
+        saveZoomState();
         return;
     }
 
@@ -348,19 +424,86 @@ function renderChart(mode, data) {
     const canvas = document.createElement("canvas");
     document.getElementById("chartContainer").appendChild(canvas);
 
-    charts.push(new Chart(canvas.getContext("2d"), {
+    const chart = new Chart(canvas.getContext("2d"), {
         type: "scatter",
         data: {
             datasets: [{ label: "XY", data }]
         },
         options: {
+            plugins: {
+                zoom: {
+                    pan: { enabled: true, mode: zoomMode },
+                    zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: zoomMode, drag: { enabled: true } },
+                }
+            },
             scales: {
                 x: { title: { display: true, text: "X" } },
                 y: { title: { display: true, text: "Y" } }
             }
         }
-    }));
+    });
+    charts.push(chart);
+    saveZoomState();
 }
+// Zoom/pan controls
+function setZoomMode(mode) {
+    zoomMode = mode;
+    charts.forEach(c => {
+        c.options.plugins.zoom.pan.mode = mode;
+        c.options.plugins.zoom.zoom.mode = mode;
+        c.update();
+    });
+}
+
+function undoZoom() {
+    if (zoomHistoryIndex > 0) {
+        zoomHistoryIndex--;
+        applyZoomState(zoomHistory[zoomHistoryIndex]);
+    }
+}
+
+function redoZoom() {
+    if (zoomHistoryIndex < zoomHistory.length - 1) {
+        zoomHistoryIndex++;
+        applyZoomState(zoomHistory[zoomHistoryIndex]);
+    }
+}
+
+function resetZoom() {
+    charts.forEach(c => c.resetZoom && c.resetZoom());
+    zoomHistoryIndex = 0;
+    if (zoomHistory.length) applyZoomState(zoomHistory[0]);
+}
+
+function applyZoomState(state) {
+    if (!state) return;
+    state.forEach((s, i) => {
+        const c = charts[i];
+        if (!c) return;
+        if (s.x) {
+            c.scales.x.options.min = s.x.min;
+            c.scales.x.options.max = s.x.max;
+        } else {
+            c.scales.x.options.min = undefined;
+            c.scales.x.options.max = undefined;
+        }
+        if (s.y) {
+            c.scales.y.options.min = s.y.min;
+            c.scales.y.options.max = s.y.max;
+        } else {
+            c.scales.y.options.min = undefined;
+            c.scales.y.options.max = undefined;
+        }
+        c.update();
+    });
+}
+
+document.getElementById("zoomXBtn").addEventListener("click", () => setZoomMode('x'));
+document.getElementById("zoomYBtn").addEventListener("click", () => setZoomMode('y'));
+document.getElementById("zoomXYBtn").addEventListener("click", () => setZoomMode('xy'));
+document.getElementById("undoZoomBtn").addEventListener("click", undoZoom);
+document.getElementById("redoZoomBtn").addEventListener("click", redoZoom);
+document.getElementById("resetZoomBtn").addEventListener("click", resetZoom);
 
 
 function exportCSV() {
