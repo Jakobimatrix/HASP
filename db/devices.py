@@ -5,14 +5,15 @@ from utilities.time import Timestamp, getTimeStamp
 from db.helper import printDbInfo, enableWalMode
 
 DB_FILE = Path(__file__).parent / "devices.db"
+SCHEMA_FILE = Path(__file__).parent / "schema_devices.sql"
 
 def getDB():
     return sqlite3.connect(DB_FILE)
 
 def initDB():
     with getDB() as con:
-        con.executescript((Path(__file__).parent / "schema_devices.sql").read_text())
-        printDbInfo(DB_FILE, con)
+        con.executescript(SCHEMA_FILE.read_text())
+        printDbInfo(DB_FILE, con, SCHEMA_FILE)
         enableWalMode(con)
 
 def addNewDevice(device_id, name, info, device):

@@ -7,6 +7,7 @@ from db.helper import printDbInfo
 from utilities.password import generateSalt, hashPassword, verifyPassword
 
 DB_FILE = Path(__file__).parent / "users.db"
+SCHEMA_FILE = Path(__file__).parent / "schema_user.sql"
 
 def getDB():
     return sqlite3.connect(DB_FILE)
@@ -14,8 +15,8 @@ def getDB():
 def initDB():
     """Initialize the database schema."""
     with getDB() as con:
-        con.executescript((Path(__file__).parent / "schema_user.sql").read_text())
-        printDbInfo(DB_FILE, con)
+        con.executescript(SCHEMA_FILE.read_text())
+        printDbInfo(DB_FILE, con, SCHEMA_FILE)
 
 def verifyUser(username: str, password: str) -> bool:
     """Check if the given password matches the stored password for the username."""

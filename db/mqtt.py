@@ -15,7 +15,7 @@ def getDB():
 def initDB():
     with getDB() as con:
         con.executescript(SCHEMA_FILE.read_text())
-        printDbInfo(DB_FILE, con)
+        printDbInfo(DB_FILE, con, SCHEMA_FILE)
         enableWalMode(con)
 
 # ----------------------

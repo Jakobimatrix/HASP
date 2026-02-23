@@ -7,14 +7,15 @@ from db.helper import printDbInfo, enableWalMode
 
 
 DB_FILE = Path(__file__).parent / "device_data.db"
+SCHEMA_FILE = Path(__file__).parent / "schema_device_data.sql"
 
 def getDB():
     return sqlite3.connect(DB_FILE)
 
 def initDB():
     with getDB() as con:
-        con.executescript((Path(__file__).parent / "schema_device_data.sql").read_text())
-        printDbInfo(DB_FILE, con)  
+        con.executescript(SCHEMA_FILE.read_text())
+        printDbInfo(DB_FILE, con, SCHEMA_FILE)  
         enableWalMode(con)      
 
 def insertMeasurement(
