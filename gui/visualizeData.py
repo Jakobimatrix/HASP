@@ -102,14 +102,14 @@ def register(app):
             ids = data["keys"]  # in this case keys are report_ids
             result = []
 
-            grouped = {}
-            rows = []
-            reprgivenIds = []
+            
+            #rows = []
+            #reprgivenIds = []
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-                reprgivenIds.append(repr(id))
-                
+                #reprgivenIds.append(repr(id))
+                grouped = {}
                 for r in rows:
                     key = r[3] + ":" + r[4]  # device_id:key
                     if key not in grouped:
@@ -128,20 +128,21 @@ def register(app):
                             for r in groupedRows
                         ]
                     })
-            #return jsonify(result)
-            allDataWithReportId = getAllDataWithAReportId()
-            reprallData_ids = []
+            return jsonify(result)
 
-            foundIds = []
+            #allDataWithReportId = getAllDataWithAReportId()
+            #reprallData_ids = []
 
-            for r in allDataWithReportId:
-                id = r[5]  # report_id
-                reprallData_ids.append(repr(id))
-                if id in ids:
-                    foundIds.append(id)
+            #foundIds = []
+
+            #for r in allDataWithReportId:
+            #    id = r[5]  # report_id
+            #    reprallData_ids.append(repr(id))
+            #    if id in ids:
+            #        foundIds.append(id)
 
 
-            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids, "found_ids": foundIds})
+            #return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids, "found_ids": foundIds})
 
         except Exception as e:
             import traceback
