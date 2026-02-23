@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional, Tuple
 
 from utilities.time import Timestamp, getTimeStamp
+from db.info import print_db_info
 
 
 DB_FILE = Path(__file__).parent / "device_data.db"
@@ -13,6 +14,7 @@ def getDB():
 def initDB():
     with getDB() as con:
         con.executescript((Path(__file__).parent / "schema_device_data.sql").read_text())
+        print_db_info(DB_FILE, con)        
 
 def insertMeasurement(
     device_id: str,
