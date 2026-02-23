@@ -174,7 +174,8 @@ def getTimeSeriesViaReportId(report_id: str, device_id: str = None):
             return con.execute(
                 """
                 SELECT ts_sec, ts_nsec, device_id, key,
-                    COALESCE(value_num, value_int, value_text, value_bool) AS value
+                       COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                       report_id
                 FROM measurements
                 WHERE report_id = ?
                 ORDER BY ts_sec, ts_nsec
@@ -184,10 +185,11 @@ def getTimeSeriesViaReportId(report_id: str, device_id: str = None):
         return con.execute(
             """
             SELECT ts_sec, ts_nsec, key,
-                COALESCE(value_num, value_int, value_text, value_bool) AS value
+                   COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                   report_id
             FROM measurements
             WHERE report_id = ?
-                AND device_id = ?
+              AND device_id = ?
             ORDER BY ts_sec, ts_nsec
             """,
             (report_id, device_id),
