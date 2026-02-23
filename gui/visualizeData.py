@@ -104,9 +104,11 @@ def register(app):
 
             grouped = {}
             rows = []
+            reprgivenIds = []
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
+                reprgivenIds.append(repr(id))
                 
                 for r in rows:
                     key = r[3] + ":" + r[4]  # device_id:key
@@ -127,7 +129,14 @@ def register(app):
                         ]
                     })
             #return jsonify(result)
-            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "all_data_with_report_id": getAllDataWithAReportId()})
+            allDataWithReportId = getAllDataWithAReportId()
+            reprallData_ids = []
+
+            for r in allDataWithReportId:
+                reprallData_ids.append(repr(r[5]))  # r[5] is the report_id
+
+
+            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids})
 
         except Exception as e:
             import traceback
