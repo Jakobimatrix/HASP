@@ -173,7 +173,7 @@ def getXYSeries(device_id: str, x_key: str, y_key: str):
 
 def getTimeSeriesViaReportId(report_id: str, device_id: str = None):  
     with getDB() as con:
-        if device_id is not None:
+        if device_id is None:
             return con.execute(
                 """
                 SELECT ts_sec, ts_nsec, device_id, key,
