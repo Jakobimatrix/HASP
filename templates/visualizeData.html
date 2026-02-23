@@ -193,10 +193,6 @@ async function loadPlot() {
     });
 
     const data = await res.json();
-    console.log("Plot request payload:", payload);
-    console.log("Plot response:", res);
-    console.log("Received data series:", data);
-
     if (!Array.isArray(data)) {
         console.error("Expected array, got:", data);
         alert("Backend error – see console");
@@ -512,16 +508,8 @@ function renderChart(mode, data) {
     }
     alert("Invalid mode: '" + mode + "'");
 }
-// Zoom/pan controls
-function setZoomMode(mode) {
-    zoomMode = mode;
-    charts.forEach(c => {
-        c.options.plugins.zoom.pan.mode = mode;
-        c.options.plugins.zoom.zoom.mode = mode;
-        c.update();
-    });
-}
 
+// Zoom/pan controls
 function undoZoom() {
     if (zoomHistoryIndex > 0) {
         zoomHistoryIndex--;
@@ -593,8 +581,8 @@ function highlightModeButton(selectedId) {
 function setZoomMode(mode) {
     zoomMode = mode;
     charts.forEach(c => {
-        c.options.plugins.zoom.pan.mode = mode === "pan" ? zoomMode : mode;
-        c.options.plugins.zoom.zoom.mode = mode === "pan" ? zoomMode : mode;
+        c.options.plugins.zoom.pan.mode = mode;
+        c.options.plugins.zoom.zoom.mode = mode;
         c.update();
     });
     highlightModeButton(modeButtons.find(btn => btn.mode === mode)?.id);
