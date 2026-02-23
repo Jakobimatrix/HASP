@@ -6,7 +6,8 @@ from db.device_data import (
     getAllReportIds,
     getTimeSeries,
     getXYSeries,
-    getTimeSeriesViaReportId
+    getTimeSeriesViaReportId,
+    getAllDataWithAReportId
 )
 
 def register(app):
@@ -101,20 +102,17 @@ def register(app):
             ids = data["keys"]  # in this case keys are report_ids
             result = []
 
-            debgRows = None
-            debugGroups = None
+            grouped = {}
+            rows = []
             
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-                debgRows = rows
-                grouped = {}
+                
                 for r in rows:
                     key = r[3] + ":" + r[4]  # device_id:key
                     if key not in grouped:
                         grouped[key] = []
                     grouped[key].append(r)
-
-                debugGroups = grouped
 
                 for key, groupedRows in grouped.items():
                     result.append({
@@ -123,14 +121,13 @@ def register(app):
                         "points": [
                             {
                                 "t": r[0] + r[1] / 1e9,
-                                "v": float(r[4]),
-
+                                "v": float(r[4])
                             }
                             for r in groupedRows
                         ]
-                })
+                    })
             #return jsonify(result)
-            return jsonify({"data": result, "report_ids": ids, "debug_rows": debgRows, "debug_groups": debugGroups})
+            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "all_data_with_report_id": getAllDataWithAReportId()})
 
         except Exception as e:
             import traceback

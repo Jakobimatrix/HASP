@@ -193,6 +193,19 @@ def getTimeSeriesViaReportId(report_id: str, device_id: str = None):
             (report_id, device_id),
         ).fetchall()
 
+def getAllDataWithAReportId():
+    with getDB() as con:
+        return con.execute(
+            """
+            SELECT ts_sec, ts_nsec, device_id, key,
+                COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                report_id
+            FROM measurements
+            WHERE report_id IS NOT NULL AND report_id != ''
+            ORDER BY ts_sec, ts_nsec
+            """
+        ).fetchall()
+
 def removeDeviceData(device_id):
     with getDB() as con:
         con.execute("DELETE FROM measurements WHERE device_id = ?", (device_id,))
