@@ -285,13 +285,41 @@ function renderChart(mode, data) {
         chart.update();
     }
 
+    const syncX = document.getElementById("syncXZoomToggle").checked;
+    function syncXZoom({chart}) {
+        if (!syncX) return;
+        const xScale = chart.scales.x;
+        charts.forEach(c => {
+            if (c !== chart) {
+                c.scales.x.options.min = xScale.min;
+                c.scales.x.options.max = xScale.max;
+                c.update();
+            }
+        });
+    }
+    
+    function getZoomOptions() {
+        return {
+            pan: { enabled: true, mode: zoomMode },
+            zoom: {
+                wheel: { enabled: false },
+                pinch: { enabled: true },
+                mode: zoomMode,
+                drag: { enabled: true },
+                onZoom: syncX ? syncXZoom : undefined,
+                onZoomComplete: saveZoomState
+            },
+            limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
+        };
+    }
+
     const container = document.getElementById("chartContainer");
     if (mode === "independent") {
         const split = document.getElementById("splitPlots").checked;
         const removeOffset = document.getElementById("removeOffsetToggle").checked;
         const xAxisMode = document.getElementById("xAxisMode").value;
         const logYAxis = document.getElementById("logYAxisToggle").checked;
-        const syncX = document.getElementById("syncXZoomToggle").checked;
+        
         
         function transformX(points) {
             if (!points.length) return points;
@@ -382,38 +410,10 @@ function renderChart(mode, data) {
             };
         }
 
-        function getZoomOptions() {
-            return {
-                pan: { enabled: true, mode: zoomMode },
-                zoom: {
-                    wheel: { enabled: false },
-                    pinch: { enabled: true },
-                    mode: zoomMode,
-                    drag: { enabled: true },
-                    onZoom: syncX ? syncXZoom : undefined,
-                    onZoomComplete: saveZoomState
-                },
-                limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
-            };
-        }
-
-        function syncXZoom({chart}) {
-            if (!syncX) return;
-            const xScale = chart.scales.x;
-            charts.forEach(c => {
-                if (c !== chart) {
-                    c.scales.x.options.min = xScale.min;
-                    c.scales.x.options.max = xScale.max;
-                    c.update();
-                }
-            });
-        }
-
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
-            const chartIdx = i;
             const defaultType = "line";
-            const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
+            const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             canvas.style.marginBottom = "40px";
@@ -458,29 +458,11 @@ function renderChart(mode, data) {
     }
 
     // XY mode
-    else if (mode === "xy") {
-        const container = document.getElementById("chartContainer");
-
-        function getZoomOptions() {
-            return {
-                pan: { enabled: true, mode: zoomMode },
-                zoom: {
-                    wheel: { enabled: false },
-                    pinch: { enabled: true },
-                    mode: zoomMode,
-                    drag: { enabled: true },
-                    onZoom: undefined,
-                    onZoomComplete: saveZoomState
-                },
-                limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
-            };
-        }
-        
+    else if (mode === "xy") {        
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
-            const chartIdx = i;
             const defaultType = "scatter";
-            const dropdown = createChartTypeDropdown(defaultType, chartIdx, handleChartTypeChange);
+            const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             container.appendChild(canvas);
