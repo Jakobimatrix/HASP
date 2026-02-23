@@ -2,6 +2,7 @@ import sqlite3
 import json
 from pathlib import Path
 from utilities.time import Timestamp, getTimeStamp
+from db.helper import printDbInfo, enableWalMode
 
 DB_FILE = Path(__file__).parent / "mqtt.db"
 SCHEMA_FILE = Path(__file__).parent / "schema_mqtt.sql"
@@ -14,6 +15,8 @@ def getDB():
 def initDB():
     with getDB() as con:
         con.executescript(SCHEMA_FILE.read_text())
+        printDbInfo(DB_FILE, con)
+        enableWalMode(con)
 
 # ----------------------
 TOPICS_TABLE = "topics"

@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from pathlib import Path
+from db.helper import printDbInfo, enableWalMode
 
 DB_FILE = Path(__file__).parent / "state.db"
 
@@ -13,6 +14,8 @@ def initDB():
     """Initialize the database schema."""
     with getDB() as con:
         con.executescript((Path(__file__).parent / "schema_state.sql").read_text())
+        printDbInfo(DB_FILE, con)
+        enableWalMode(con)
 
 def getDeviceState(device_id):
     conn = getDB()

@@ -2,6 +2,7 @@ import sqlite3
 import json
 from pathlib import Path
 from flask import session
+from db.helper import printDbInfo
 
 from utilities.password import generateSalt, hashPassword, verifyPassword
 
@@ -14,6 +15,7 @@ def initDB():
     """Initialize the database schema."""
     with getDB() as con:
         con.executescript((Path(__file__).parent / "schema_user.sql").read_text())
+        printDbInfo(DB_FILE, con)
 
 def verifyUser(username: str, password: str) -> bool:
     """Check if the given password matches the stored password for the username."""

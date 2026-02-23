@@ -132,11 +132,16 @@ def register(app):
             allDataWithReportId = getAllDataWithAReportId()
             reprallData_ids = []
 
+            foundIds = []
+
             for r in allDataWithReportId:
-                reprallData_ids.append(repr(r[5]))  # r[5] is the report_id
+                id = r[5]  # report_id
+                reprallData_ids.append(repr(id))
+                if id in ids:
+                    foundIds.append(id)
 
 
-            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids})
+            return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids, "found_ids": foundIds})
 
         except Exception as e:
             import traceback

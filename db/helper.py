@@ -1,8 +1,16 @@
 import os
 import sqlite3
 
+def enableWalMode(connection) -> None:
+    cur = connection.cursor()
+    cur.execute("PRAGMA journal_mode=WAL;")
+    mode = cur.fetchone()[0]
+    print(f"Journal mode set to: {mode}")
 
-def print_db_info(DB_FILE, connection) -> None:
+    cur.execute("PRAGMA synchronous=NORMAL;")
+    print("Synchronous set to NORMAL")
+
+def printDbInfo(DB_FILE, connection) -> None:
     print("=== DATABASE FILE INFO ===")
     print(f"Path: {DB_FILE.resolve()}")
 

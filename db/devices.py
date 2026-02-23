@@ -2,7 +2,7 @@ import sqlite3
 from pathlib import Path
 
 from utilities.time import Timestamp, getTimeStamp
-
+from db.helper import printDbInfo, enableWalMode
 
 DB_FILE = Path(__file__).parent / "devices.db"
 
@@ -12,6 +12,8 @@ def getDB():
 def initDB():
     with getDB() as con:
         con.executescript((Path(__file__).parent / "schema_devices.sql").read_text())
+        printDbInfo(DB_FILE, con)
+        enableWalMode(con)
 
 def addNewDevice(device_id, name, info, device):
     timestamp = getTimeStamp()
