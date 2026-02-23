@@ -111,7 +111,7 @@ def register(app):
                 #reprgivenIds.append(repr(id))
                 grouped = {}
                 for r in rows:
-                    key = r[3] + ":" + r[4]  # device_id:key
+                    key = r[2] + ":" + r[3]  # device_id:key
                     if key not in grouped:
                         grouped[key] = []
                     grouped[key].append(r)
