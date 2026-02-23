@@ -29,11 +29,12 @@ def auto_register(app, package_name):
         if hasattr(module, "register"):
             module.register(app)
 
-init_devices_db()
-init_user_db()
-init_device_data_db()
-init_state_db()
-init_mqtt_db()
+def initialize_databases():
+    init_devices_db()
+    init_user_db()
+    init_device_data_db()
+    init_state_db()
+    init_mqtt_db()
 
 
 app = Flask(__name__)
@@ -66,8 +67,6 @@ app.secret_key = hashlib.sha256(combined).digest()
 auto_register(app, "api")
 auto_register(app, "gui")
 
-startMqtt()
-
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
@@ -76,3 +75,5 @@ if __name__ == "__main__":
         debug=False,
         use_reloader=False # Avoid double initialization (linux systemd restarts the process)
     )
+    initialize_databases()
+    startMqtt()
