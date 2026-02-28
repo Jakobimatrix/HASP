@@ -381,6 +381,31 @@ function getZoomOptions() {
     };
 }
 
+const chartTypeOptions = [
+    { value: "line", label: "Line" },
+    { value: "line-fill", label: "Line (Fill)" },
+    { value: "line-noline", label: "Line (showLine = false)" },
+    { value: "bar", label: "Bar Chart" },
+    { value: "bubble", label: "Bubble Chart" },
+    { value: "scatter", label: "Scatter" }
+];
+
+function createChartTypeDropdown(defaultType, idx, onChange) {
+    const select = document.createElement("select");
+    select.className = "form-select form-select-sm mb-2";
+    select.style.width = "auto";
+    select.dataset.chartIdx = idx;
+    chartTypeOptions.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        if (opt.value === defaultType) option.selected = true;
+        select.appendChild(option);
+    });
+    select.addEventListener("change", onChange);
+    return select;
+}
+
 function getNewCanvasContext(){
     const container = document.getElementById("chartContainer");
     const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
@@ -504,33 +529,6 @@ function renderChart(mode, data) {
         }
         return false;
     }
-
-    // Chart type options
-    const chartTypeOptions = [
-        { value: "line", label: "Line" },
-        { value: "line-fill", label: "Line (Fill)" },
-        { value: "line-noline", label: "Line (showLine = false)" },
-        { value: "bar", label: "Bar Chart" },
-        { value: "bubble", label: "Bubble Chart" },
-        { value: "scatter", label: "Scatter" }
-    ];
-
-    function createChartTypeDropdown(defaultType, idx, onChange) {
-        const select = document.createElement("select");
-        select.className = "form-select form-select-sm mb-2";
-        select.style.width = "auto";
-        select.dataset.chartIdx = idx;
-        chartTypeOptions.forEach(opt => {
-            const option = document.createElement("option");
-            option.value = opt.value;
-            option.textContent = opt.label;
-            if (opt.value === defaultType) option.selected = true;
-            select.appendChild(option);
-        });
-        select.addEventListener("change", onChange);
-        return select;
-    }
-
 
     function handleChartTypeChange(e) {
         const idx = parseInt(e.target.dataset.chartIdx);
