@@ -648,8 +648,8 @@ function renderChart(mode, data) {
                             formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
                         }
                         let extra = "";
-                        if (context.parsed.report_id != "") {
-                            extra += ` [Report ID: ${context.parsed.report_id}]`;
+                        if (context.raw &&context.raw.report_id != "") {
+                            extra += ` [Report ID: ${context.raw.report_id}]`;
                         }
                         return `${context.dataset.label || ''}${extra} (x: ${formatted}, y: ${context.parsed.y})`;
                     }
