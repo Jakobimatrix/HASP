@@ -266,6 +266,7 @@ function clearCharts() {
 }
 
 function renderChart(mode, data) {
+    console.log("Rendering chart with mode:", mode, "and data:", data);
     clearCharts();
 
     const source = document.getElementById("sourceSelect").value;
@@ -275,7 +276,7 @@ function renderChart(mode, data) {
             const deselectedKeys = getSelectedValues("keysToDeselect");
             console.log("skipDeselectedKeys", {deselectedKeys, pointsData});
             console.log("Checking if key is in deselected:", pointsData.key, deselectedKeys.includes(pointsData.key));
-            return !deselectedKeys.includes(pointsData.key);
+            return deselectedKeys.includes(pointsData.key);
         }
         return false;
     }
