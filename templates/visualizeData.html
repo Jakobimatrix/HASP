@@ -511,6 +511,7 @@ function renderChart(mode, data) {
             if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
+            console.log(chartTypesSelected);
             const dropdown = createChartTypeDropdown(chartTypesSelected[i].type, i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
@@ -566,7 +567,7 @@ function renderChart(mode, data) {
             const s = data[i];
             const defaultType = "scatter";
             if(chartTypesSelected.length <= i){
-                chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
+                chartTypesSelected[i] = { type: defaultType, fill: undefined, showLine: undefined };
             }
             const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             container.appendChild(dropdown);
