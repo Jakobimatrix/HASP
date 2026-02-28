@@ -358,7 +358,7 @@ function renderChart(mode, data) {
             showLine = false;
         }
 
-        chartTypesSelected[idx] = newType;
+        chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
 
         chart.config.type = newType;
         if (chart.config.type === "line") {
@@ -509,10 +509,9 @@ function renderChart(mode, data) {
             }
             const defaultType = "line";
             if(chartTypesSelected.length <= i){
-                chartTypesSelected[i] = defaultType;
+                chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
-            console.log(chartTypesSelected, i);
-            const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
+            const dropdown = createChartTypeDropdown(chartTypesSelected[i].type, i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             canvas.style.marginBottom = "40px";
@@ -520,13 +519,15 @@ function renderChart(mode, data) {
             const ctx = canvas.getContext("2d");
             let chart = null;
             if (split){
-                console.log("Creating separate chart for series", i, "with key", data[i].key);
                 chart = new Chart(ctx, {
                     type: chartTypesSelected[i],
+
                     data: {
                         datasets: [{
                             label: `${data[i].device_id}:${data[i].key}${data[i].report_id ? ` [Report ID: ${data[i].report_id}]` : ''}`,
                             data: transformX(data[i].points),
+                            fill: chartTypesSelected[i].fill,
+                            showLine: hartTypesSelected[i].showLine
                         }]
                     },
                     options: {
@@ -543,6 +544,8 @@ function renderChart(mode, data) {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
                         label: `${data_i.device_id}:${data_i.key}${data_i.report_id ? ` [Report ID: ${data_i.report_id}]` : ''}`,
                         data: transformX(data_i.points),
+                        fill: chartTypesSelected[i].fill,
+                        showLine: hartTypesSelected[i].showLine
                     }))
                 },
                 options: {
@@ -564,7 +567,7 @@ function renderChart(mode, data) {
             const s = data[i];
             const defaultType = "scatter";
             if(chartTypesSelected.length <= i){
-                chartTypesSelected[i] = defaultType;
+                chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
             const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             container.appendChild(dropdown);
@@ -572,11 +575,13 @@ function renderChart(mode, data) {
             container.appendChild(canvas);
             const ctx = canvas.getContext("2d");
             const chart = new Chart(ctx, {
-                type: chartTypesSelected[i],
+                type: chartTypesSelected[i].type,
                 data: {
                     datasets: [{
                         label: `${s.x_key || 'X'}:${s.y_key || 'Y'}`,
-                        data: s.points
+                        data: s.points,
+                        fill: chartTypesSelected[i].fill,
+                        showLine: hartTypesSelected[i].showLine
                     }]
                 },
                 options: {
