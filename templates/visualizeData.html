@@ -17,13 +17,10 @@
             </select>
         </div>
         <div class="col-12 col-md-6">
-            <h5>2. Select Visualization Mode</h5>
-            <select id="modeSelect" class="form-select mb-3">
-                <option value="independent">Time series (Y vs Time)</option>
-                <option value="xy">XY plot (X vs Y)</option>
-            </select>
-            <h5>3. Select Key(s)</h5>
+            <h5>2. Select Key(s)</h5>
             <div id="keySelectors"></div>
+            <h5 id="keyDeselectorsHead">3. Deselect Keys</h5>
+            <div id="keyDeselectors"></div>
         </div>
     </div>
     <div class="mb-3 d-flex gap-2 flex-wrap">
@@ -73,6 +70,10 @@
                 <option value="device_id" selected>Select Data by Device</option>
                 <option value="report_id">Select Data by Report ID</option>
             </select>
+            <select id="modeSelect" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                <option value="independent">Time series (Y vs Time)</option>
+                <option value="xy">XY plot (X vs Y)</option>
+            </select>
         </div>
     </div>
     <hr>
@@ -84,6 +85,8 @@ let lastSeries = [];
 
 /* helpers */
 function getSelectedValues(id) {
+    const select = document.getElementById(id);
+    if (!select) return [];
     return Array.from(document.getElementById(id).selectedOptions)
         .map(o => o.value);
 }
@@ -123,12 +126,12 @@ async function loadKeys() {
 
     const keys = await res.json();
     const mode = document.getElementById("modeSelect").value;
-    const container = document.getElementById("keySelectors");
+    const containerKeySelect = document.getElementById("keySelectors");
 
-    container.innerHTML = "";
+    containerKeySelect.innerHTML = "";
 
     if (mode === "independent") {
-        container.innerHTML = `
+        containerKeySelect.innerHTML = `
             <select id="keys" multiple size="6">
                 ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
@@ -141,7 +144,7 @@ async function loadKeys() {
         document.getElementById("splitPlots").addEventListener("change", autoloadPlot);
         document.getElementById("keys").addEventListener("change", autoloadPlot);
     } else {
-        container.innerHTML = `
+        containerKeySelect.innerHTML = `
             X:
             <select id="xKey">
                 ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
@@ -154,8 +157,6 @@ async function loadKeys() {
         document.getElementById("xKey").addEventListener("change", autoloadPlot);
         document.getElementById("yKey").addEventListener("change", autoloadPlot);
     }
-
-
 }
 
 async function loadPlot() {
@@ -193,10 +194,43 @@ async function loadPlot() {
     });
 
     const data = await res.json();
-    if (!Array.isArray(data)) {
-        console.error("Expected array, got:", data);
-        alert("Backend error – see console");
-        return;
+    if (source == "report_id") {
+        // expect jsonify({"data": result, "uniqueKeys": list(uniqueKeys)})
+        if (!data.data || !Array.isArray(data.data) || !data.uniqueKeys || !Array.isArray(data.uniqueKeys)) {
+            console.error("Expected data json object with data and uniqueKeys arrays, got:", data);
+            alert("Backend error – see console");
+            return;
+        }
+        lastSeries = data.data; 
+    } else if (source === "device_id") {
+        // expect plain array of series
+        if (!data.data || !Array.isArray(data.data)) {
+            console.error("Expected data array, got:", data);
+            alert("Backend error – see console");
+            return;
+        }
+        lastSeries = data;
+    }
+
+    const containerKeyDeSelect = document.getElementById("keyDeselectors");
+    containerKeyDeSelect.innerHTML = "";
+
+    if(source == "report_id") {
+        document.getElementById("keyDeselectorsHead").style.display = "none";
+    } else if( source === "device_id" ){
+        document.getElementById("keyDeselectorsHead").style.display = "block";
+        containerKeyDeSelect.style.display = "block";
+        containerKeyDeSelect.innerHTML = `
+            <select id="keysToDeselect" multiple size="6">
+                ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
+            </select>
+        `;
+        document.getElementById("keysToDeselect").addEventListener("change", () => renderChart(mode, lastSeries));
+    }
+
+    if (source == "report_id") {
+        lastSeries = data.data; 
+        renderChart(mode, data.data);
     }
     lastSeries = data; 
     renderChart(mode, data);
@@ -217,6 +251,16 @@ function clearCharts() {
 
 function renderChart(mode, data) {
     clearCharts();
+
+    const source = document.getElementById("sourceSelect").value;
+    const deselectedKeys = getSelectedValues("keysToDeselect");
+
+    function skipDeselectedKeys(points) {
+        if(source == "report_id"){
+            return points.filter(p => !deselectedKeys.includes(p.key));
+        }
+        return false;
+    }
 
     // Helper for zoom state
     function saveZoomState() {
@@ -391,6 +435,9 @@ function renderChart(mode, data) {
                         if (context.raw && context.raw.device_id && context.raw.key) {
                             extra = ` [${context.raw.device_id}:${context.raw.key}]`;
                         }
+                        if(context.raw && context.raw.report_id) {
+                            extra += ` [Report ID: ${context.raw.report_id}]`;
+                        }
                         return `${context.dataset.label || ''}${extra} (x: ${formatted}, y: ${context.parsed.y})`;
                     }
                 }
@@ -411,6 +458,9 @@ function renderChart(mode, data) {
         }
 
         for (let i = 0; i < data.length; i++) {
+            if(skipDeselectedKeys(data[i].points)){
+                continue;
+            }
             const s = data[i];
             const defaultType = "line";
             const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
@@ -461,6 +511,9 @@ function renderChart(mode, data) {
     // XY mode
     else if (mode === "xy") {        
         for (let i = 0; i < data.length; i++) {
+            if(skipDeselectedKeys(data[i].points)){
+                continue;
+            }
             const s = data[i];
             const defaultType = "scatter";
             const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);

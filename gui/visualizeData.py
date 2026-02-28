@@ -101,14 +101,10 @@ def register(app):
             data = request.get_json(force=True)
             ids = data["keys"]  # in this case keys are report_ids
             result = []
+            uniqueKeys = set()
 
-            
-            #rows = []
-            #reprgivenIds = []
-            
             for id in ids:
                 rows = getTimeSeriesViaReportId(id)
-                #reprgivenIds.append(repr(id))
                 grouped = {}
                 for r in rows:
                     key = r[2] + ":" + r[3]  # device_id:key
@@ -123,12 +119,14 @@ def register(app):
                         "points": [
                             {
                                 "t": r[0] + r[1] / 1e9,
-                                "v": float(r[4])
+                                "v": float(r[4]),
+                                "report_id": id
                             }
                             for r in groupedRows
                         ]
                     })
-            return jsonify(result)
+                    uniqueKeys.add(groupedRows[0][3])
+            return jsonify({"data": result, "uniqueKeys": list(uniqueKeys)})
 
         except Exception as e:
             import traceback
