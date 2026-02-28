@@ -81,6 +81,7 @@
 <script>
 let chart = null;
 let lastSeries = [];
+let lastDeselectedKeys = [];
 
 /* helpers */
 function getSelectedValues(id) {
@@ -103,6 +104,12 @@ function autoloadPlot() {
     if (document.getElementById("autoReloadPlotToggle").checked) {
         loadPlot();
     }
+}
+
+function deselectKeyAndRenderChart(){
+    const mode = document.getElementById("modeSelect").value;
+    lastDeselectedKeys = getSelectedValues("keysToDeselect");
+    renderChart(mode, lastSeries);
 }
 
 async function loadKeys() {
@@ -221,7 +228,16 @@ async function loadPlot() {
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
         `;
-        document.getElementById("keysToDeselect").addEventListener("change", () => renderChart(mode, lastSeries));
+        keyDeselctorCOntainer = document.getElementById("keysToDeselect");
+
+        for(let i=0; i<keyDeselctorCOntainer.options.length; i++){
+            const option = keyDeselctorCOntainer.options[i];
+            if(lastDeselectedKeys.includes(option.value)){
+                option.selected = true;
+            }
+        }
+
+        keyDeselctorCOntainer.addEventListener("click", deselectKeyAndRenderChart);
     }
 
     if (source == "report_id") {
