@@ -64,6 +64,7 @@ def register(app):
                                 {
                                     "t": r[0] + r[1] / 1e9,
                                     "v": float(r[2]),
+                                    "report_id": r[3]
                                 }
                                 for r in rows
                             ]

@@ -599,7 +599,7 @@ function renderChart(mode, data) {
                     case "years": x = x / (86400 * 365.25); break;
                     case "date": x = (p.t) * 1000; break;
                 }
-                return { x, y: p.v };
+                return { x, y: p.v, report_id: p.report_id };
             });
         }
 
@@ -633,8 +633,6 @@ function renderChart(mode, data) {
             tooltip: {
                 callbacks: {
                     label: function(context) {
-                        // context.parsed contains the return value of transform
-                        // context.raw contains the original data point {t, v} and device_id, key if available
                         let x = context.parsed.x;
                         const scaleType = context.chart.scales.x.type;
                         let formatted = x;
@@ -649,13 +647,9 @@ function renderChart(mode, data) {
                             let pad = n => n.toString().padStart(2, '0');
                             formatted = `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
                         }
-                        // Add device_id and key if available in raw point
                         let extra = "";
-                        if (context.raw && context.raw.device_id && context.raw.key) {
-                            extra = ` [${context.raw.device_id}:${context.raw.key}]`;
-                        }
-                        if(context.raw && context.raw.report_id) {
-                            extra += ` [Report ID: ${context.raw.report_id}]`;
+                        if (context.parsed.report_id != "") {
+                            extra += ` [Report ID: ${context.parsed.report_id}]`;
                         }
                         return `${context.dataset.label || ''}${extra} (x: ${formatted}, y: ${context.parsed.y})`;
                     }

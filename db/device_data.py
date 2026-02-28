@@ -141,7 +141,8 @@ def getTimeSeries(device_id: str, key: str):
         return con.execute(
             """
             SELECT ts_sec, ts_nsec,
-                   COALESCE(value_num, value_int, value_text, value_bool) AS value
+                   COALESCE(value_num, value_int, value_text, value_bool) AS value,
+                   report_id
             FROM measurements
             WHERE device_id = ?
               AND key = ?
