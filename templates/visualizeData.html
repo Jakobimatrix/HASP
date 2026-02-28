@@ -332,7 +332,7 @@ function createHistograms(chart) {
 
         const min = Math.min(...values);
         const max = Math.max(...values);
-        let binSize = (globalMax - globalMin) / bins;
+        let binSize = (max - min) / bins;
         if (binSize === 0) binSize = 1;
 
         if (min < globalMin) globalMin = min;
