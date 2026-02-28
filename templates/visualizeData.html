@@ -673,7 +673,7 @@ function renderChart(mode, data) {
                     }
                 });
                 charts.push(chart);
-                createHistograms(idx, ctx);
+                createHistograms(i, ctx);
                 continue;
             }
             chart = new Chart(ctx, {
@@ -692,7 +692,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(idx, ctx);
+            createHistograms(i, ctx);
             break; // all data in 1 chart
         }
         
@@ -732,7 +732,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(idx, ctx);
+            createHistograms(i, ctx);
         }
         saveZoomState();
         return;
