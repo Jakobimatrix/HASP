@@ -406,9 +406,9 @@ function createChartTypeDropdown(defaultType, idx, onChange) {
     return select;
 }
 
-function getNewCanvasContext(){
+function getNewCanvasContext(canvasIdx){
     const container = document.getElementById("chartContainer");
-    const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
+    const dropdown = createChartTypeDropdown(chartTypesSelected[canvasIdx], canvasIdx, handleChartTypeChange);
     container.appendChild(dropdown);
     const canvas = document.createElement("canvas");
     canvas.style.marginBottom = "40px";
@@ -435,10 +435,10 @@ function createHistograms(idx) {
         console.log(values);
 
         function percentile(values, p) {
-            const idx = (values.length - 1) * p;
-            const lower = Math.floor(idx);
-            const upper = Math.ceil(idx);
-            const weight = idx - lower;
+            const n = (values.length - 1) * p;
+            const lower = Math.floor(n);
+            const upper = Math.ceil(n);
+            const weight = n - lower;
             if (upper >= values.length) return values[lower];
             return values[lower] * (1 - weight) + values[upper] * weight;
         }
@@ -475,7 +475,7 @@ function createHistograms(idx) {
         });
     });
 
-    const newChart = new Chart(getNewCanvasContext(), {
+    const newChart = new Chart(getNewCanvasContext(idx+1), {
         type: "bar",
         data: {
             datasets: histograms.map(hist => ({
@@ -503,6 +503,7 @@ function createHistograms(idx) {
         }
     });
     chartsHistograms.push(newChart);
+    return idx + 2;
 }
 
 
@@ -664,25 +665,26 @@ function renderChart(mode, data) {
             };
         }
 
+        canvas_id=0;
         for (let i = 0; i < data.length; i++) {
             if(split && skipDeselectedKeys(data[i].key)){
                 continue;
             }
             const defaultType = "line";
-            if(chartTypesSelected.length <= i){
-                chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
+            if(chartTypesSelected.length <= canvas_id){
+                chartTypesSelected[canvas_id] = { type: defaultType, fill: false, showLine: true };
             }
-            const ctx = getNewCanvasContext();
+            const ctx = getNewCanvasContext(canvas_id);
             let chart = null;
             if (split){
                 chart = new Chart(ctx, {
-                    type: chartTypesSelected[i].type,
+                    type: chartTypesSelected[canvas_id].type,
                     data: {
                         datasets: [{
                             label: `${data[i].device_id}:${data[i].key}${data[i].report_id ? ` [Report ID: ${data[i].report_id}]` : ''}`,
                             data: transformX(data[i].points),
-                            fill: chartTypesSelected[i].fill,
-                            showLine: chartTypesSelected[i].showLine
+                            fill: chartTypesSelected[canvas_id].fill,
+                            showLine: chartTypesSelected[canvas_id].showLine
                         }]
                     },
                     options: {
@@ -691,17 +693,17 @@ function renderChart(mode, data) {
                     }
                 });
                 charts.push(chart);
-                createHistograms(i);
+                canvas_id = createHistograms(canvas_id);
                 continue;
             }
             chart = new Chart(ctx, {
-                type: chartTypesSelected[i].type,
+                type: chartTypesSelected[canvas_id].type,
                 data: {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
                         label: `${data_i.device_id}:${data_i.key}${data_i.report_id ? ` [Report ID: ${data_i.report_id}]` : ''}`,
                         data: transformX(data_i.points),
-                        fill: chartTypesSelected[i].fill,
-                        showLine: chartTypesSelected[i].showLine
+                        fill: chartTypesSelected[canvas_id].fill,
+                        showLine: chartTypesSelected[canvas_id].showLine
                     }))
                 },
                 options: {
@@ -710,7 +712,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(i);
+            canvas_id = createHistograms(canvas_id);
             break; // all data in 1 chart
         }
         
@@ -719,21 +721,22 @@ function renderChart(mode, data) {
     }
 
     // XY mode
-    else if (mode === "xy") {        
+    else if (mode === "xy") {   
+        canvas_id=0;     
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
             const defaultType = "scatter";
             if(chartTypesSelected.length <= i){
-                chartTypesSelected[i] = { type: defaultType, fill: undefined, showLine: undefined };
+                chartTypesSelected[canvas_id] = { type: defaultType, fill: undefined, showLine: undefined };
             }
-            const chart = new Chart(getNewCanvasContext(), {
-                type: chartTypesSelected[i].type,
+            const chart = new Chart(getNewCanvasContext(canvas_id), {
+                type: chartTypesSelected[canvas_id].type,
                 data: {
                     datasets: [{
                         label: `${s.x_key || 'X'}:${s.y_key || 'Y'}`,
                         data: s.points,
-                        fill: chartTypesSelected[i].fill,
-                        showLine: hartTypesSelected[i].showLine
+                        fill: chartTypesSelected[canvas_id].fill,
+                        showLine: chartTypesSelected[canvas_id].showLine
                     }]
                 },
                 options: {
@@ -745,7 +748,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(i);
+            canvas_id = createHistograms(canvas_id);
         }
         saveZoomState();
         return;
