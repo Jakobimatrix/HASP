@@ -381,6 +381,14 @@ function getZoomOptions() {
     };
 }
 
+function getNewCanvasContext(){
+    const container = document.getElementById("chartContainer");
+    const canvas = document.createElement("canvas");
+    canvas.style.marginBottom = "40px";
+    container.appendChild(canvas);
+    return canvas.getContext("2d");
+}
+
 function createHistograms(idx) {
 
     let globalMin = Infinity;
@@ -437,11 +445,7 @@ function createHistograms(idx) {
         });
     });
 
-    const canvas = document.createElement("canvas");
-    canvas.style.marginBottom = "40px";
-    container.appendChild(canvas);
-    const ctx = canvas.getContext("2d");
-    const newChart = new Chart(ctx, {
+    const newChart = new Chart(getNewCanvasContext(), {
         type: "bar",
         data: {
             datasets: histograms.map(hist => ({
@@ -656,11 +660,7 @@ function renderChart(mode, data) {
                 chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
             const dropdown = createChartTypeDropdown(chartTypesSelected[i].type, i, handleChartTypeChange);
-            container.appendChild(dropdown);
-            const canvas = document.createElement("canvas");
-            canvas.style.marginBottom = "40px";
-            container.appendChild(canvas);
-            const ctx = canvas.getContext("2d");
+            const ctx = getNewCanvasContext();
             let chart = null;
             if (split){
                 chart = new Chart(ctx, {
@@ -715,11 +715,7 @@ function renderChart(mode, data) {
                 chartTypesSelected[i] = { type: defaultType, fill: undefined, showLine: undefined };
             }
             const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
-            container.appendChild(dropdown);
-            const canvas = document.createElement("canvas");
-            container.appendChild(canvas);
-            const ctx = canvas.getContext("2d");
-            const chart = new Chart(ctx, {
+            const chart = new Chart(getNewCanvasContext(), {
                 type: chartTypesSelected[i].type,
                 data: {
                     datasets: [{
