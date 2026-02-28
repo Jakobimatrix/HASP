@@ -477,6 +477,7 @@ function renderChart(mode, data) {
         }
 
         for (let i = 0; i < data.length; i++) {
+            console.log("Processing series", i, "with key", data[i].key);
             if(split && skipDeselectedKeys(data[i].key)){
                 continue;
             }
@@ -489,6 +490,7 @@ function renderChart(mode, data) {
             const ctx = canvas.getContext("2d");
             let chart = null;
             if (split){
+                console.log("Creating separate chart for series", i, "with key", data[i].key);
                 chart = new Chart(ctx, {
                     type: defaultType,
                     data: {
@@ -505,7 +507,7 @@ function renderChart(mode, data) {
                 charts.push(chart);
                 continue;
             }
-
+            console.log("Creating combined chart with length", data.length, "skipping keys:", data.filter(d => skipDeselectedKeys(d.key)).map(d => d.key));
             chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
