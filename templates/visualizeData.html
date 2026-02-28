@@ -383,8 +383,7 @@ function getZoomOptions() {
 const chartTypeOptions = [
     { value: "line", label: "Line" },
     { value: "line-fill", label: "Line (Fill)" },
-    { value: "line-noline", label: "Line (showLine = false)" },
-    { value: "bar", label: "Bar Chart" },
+    { value: "line-noline-fill", label: "Line (Fill, noLine)" },
     { value: "bubble", label: "Bubble Chart" },
     { value: "scatter", label: "Scatter" }
 ];
@@ -408,21 +407,22 @@ function createChartTypeDropdown(defaultType, idx, onChange) {
 function handleChartTypeChange(e) {
     const idx = parseInt(e.target.dataset.chartIdx);
     const chart = charts[idx];
-    const type = e.target.value;
+    const label = e.target.value;
 
     // Update chart type and options
-    let newType = type;
+    let newType = label;
     let fill = false;
     let showLine = true;
-    if (type === "line-fill") {
+    if (label === "line-fill") {
         newType = "line";
         fill = true;
-    } else if (type === "line-noline") {
+    } else if (label === "line-noline-fill") {
         newType = "line";
         showLine = false;
+        fill = true;
     }
 
-    chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
+    chartTypesSelected[idx] = {label: label, type: newType, fill: fill, showLine:showLine };
 
     chart.config.type = newType;
     if (chart.config.type === "line") {
@@ -441,7 +441,7 @@ function handleChartTypeChange(e) {
 
 function getNewCanvasContext(canvasIdx){
     const container = document.getElementById("chartContainer");
-    const dropdown = createChartTypeDropdown(chartTypesSelected[canvasIdx], canvasIdx, handleChartTypeChange);
+    const dropdown = createChartTypeDropdown(chartTypesSelected[canvasIdx].label, canvasIdx, handleChartTypeChange);
     container.appendChild(dropdown);
     const canvas = document.createElement("canvas");
     canvas.style.marginBottom = "40px";
@@ -503,24 +503,19 @@ function createHistograms(idx) {
     });
 
     if(chartTypesSelected.length <= idx + 1){
-        chartTypesSelected[idx + 1] = { type: "bar", fill: undefined, showLine: undefined };
+        chartTypesSelected[idx + 1] = {label: "line-noline-fill", type: "line", fill: true, showLine: true };
     }
     const newChart = new Chart(getNewCanvasContext(idx+1), {
-        type: "bar",
+        type: "line",
         data: {
             datasets: histograms.map(hist => ({
                 label: hist.label,
-                data: hist.data.map((count, i) => {
-                    const binStart = hist.min + i * hist.binSize;
-                    const binEnd   = binStart + hist.binSize;
-
-                    return {
-                        x: [binStart, binEnd],   // DATA-BASED WIDTH
-                        y: count / hist.numValues,
-                        count: count
-                    };
-                }),
-                backgroundColor: hist.backgroundColor
+                data: hist.data.map((count, i) => ({
+                    x: hist.min + i * hist.binSize + hist.binSize / 2,
+                    y: count/hist.numValues,
+                    count: count
+                })),
+                backgroundColor: hist.backgroundColor,
             }))
         },
         options: {
@@ -685,7 +680,7 @@ function renderChart(mode, data) {
             }
             const defaultType = "line";
             if(chartTypesSelected.length <= canvas_id){
-                chartTypesSelected[canvas_id] = { type: defaultType, fill: false, showLine: true };
+                chartTypesSelected[canvas_id] = {label: defaultType,  type: defaultType, fill: false, showLine: true };
             }
             const ctx = getNewCanvasContext(canvas_id);
             let chart = null;
@@ -740,7 +735,7 @@ function renderChart(mode, data) {
             const s = data[i];
             const defaultType = "scatter";
             if(chartTypesSelected.length <= i){
-                chartTypesSelected[canvas_id] = { type: defaultType, fill: undefined, showLine: undefined };
+                chartTypesSelected[canvas_id] = {label: defaultType, type: defaultType, fill: undefined, showLine: undefined };
             }
             const chart = new Chart(getNewCanvasContext(canvas_id), {
                 type: chartTypesSelected[canvas_id].type,
