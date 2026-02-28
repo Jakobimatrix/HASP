@@ -345,11 +345,6 @@ function renderChart(mode, data) {
         const idx = parseInt(e.target.dataset.chartIdx);
         const chart = charts[idx];
         const type = e.target.value;
-        if (chartTypesSelected.length < idx) {
-            chartTypesSelected = [];
-        }else{
-            chartTypesSelected[idx] = type;
-        }
 
         // Update chart type and options
         let newType = type;
@@ -362,6 +357,9 @@ function renderChart(mode, data) {
             newType = "line";
             showLine = false;
         }
+
+        chartTypesSelected[idx] = newType;
+
         chart.config.type = newType;
         if (chart.config.type === "line") {
             chart.data.datasets.forEach(ds => {
