@@ -537,9 +537,7 @@ function createHistograms(idx) {
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
-    chartsHistograms.forEach(c => c.destroy());
     charts = [];
-    chartsHistograms = [];
     document.getElementById("chartContainer").innerHTML = "";
     zoomHistory = [];
     zoomHistoryIndex = -1;
