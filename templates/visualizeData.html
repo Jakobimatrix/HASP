@@ -101,6 +101,14 @@ function onModeSelect(){
     loadKeys();
 }
 
+function toggleSelectAll(id, doSelect){
+    const select = document.getElementById(id);
+    if (!select) return;
+    for(let i=0; i<select.options.length; i++){
+        select.options[i].selected = doSelect;
+    }
+}
+
 function onSplitPlotsToggle(){
     const split = document.getElementById("splitPlots").checked;
     if(chartTypesSelected[0]){
@@ -175,8 +183,13 @@ async function loadKeys() {
                 <input type="checkbox" id="splitPlots">
                 One plot per key
             </label>
+            <label>
+                <input type="checkbox" id="selectAllKeys">
+                Select all keys
+            </label>
         `;
         document.getElementById("splitPlots").addEventListener("change", onSplitPlotsToggle);
+        document.getElementById("selectAllKeys").addEventListener("change", () => toggleSelectAll("keys", document.getElementById("selectAllKeys").checked));
         document.getElementById("keys").addEventListener("change", autoloadPlot);
     } else {
         containerKeySelect.innerHTML = `
@@ -259,6 +272,10 @@ async function loadPlot() {
             <select id="keysToDeselect" multiple size="6">
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
+            <label>
+                <input type="checkbox" id="selectAllDeselectKeys">
+                Select all keys
+            </label>
         `;
         const keyDeselctorContainer = document.getElementById("keysToDeselect");
 
@@ -270,6 +287,7 @@ async function loadPlot() {
         }
 
         keyDeselctorContainer.addEventListener("click", deselectKeyAndRenderChart);
+        document.getElementById("selectAllDeselectKeys").addEventListener("change", () => toggleSelectAll("keysToDeselect", document.getElementById("selectAllDeselectKeys").checked));
     }
 
     if (source == "report_id") {
@@ -511,7 +529,6 @@ function renderChart(mode, data) {
             if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
-            console.log(chartTypesSelected);
             const dropdown = createChartTypeDropdown(chartTypesSelected[i].type, i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
