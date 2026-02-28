@@ -527,7 +527,7 @@ function renderChart(mode, data) {
                             label: `${data[i].device_id}:${data[i].key}${data[i].report_id ? ` [Report ID: ${data[i].report_id}]` : ''}`,
                             data: transformX(data[i].points),
                             fill: chartTypesSelected[i].fill,
-                            showLine: hartTypesSelected[i].showLine
+                            showLine: chartTypesSelected[i].showLine
                         }]
                     },
                     options: {
@@ -545,7 +545,7 @@ function renderChart(mode, data) {
                         label: `${data_i.device_id}:${data_i.key}${data_i.report_id ? ` [Report ID: ${data_i.report_id}]` : ''}`,
                         data: transformX(data_i.points),
                         fill: chartTypesSelected[i].fill,
-                        showLine: hartTypesSelected[i].showLine
+                        showLine: chartTypesSelected[i].showLine
                     }))
                 },
                 options: {
