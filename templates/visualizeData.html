@@ -342,12 +342,15 @@ function calcBucketSizeSimpleRule(values) {
     return Math.ceil(Math.sqrt(values.length));
 }
 
-function createHistograms(chart) {
-    const histograms = [];
+function createHistograms(idx, ctx) {
 
     let globalMin = Infinity;
     let globalMax = -Infinity;
     let minBinSize = Infinity;
+
+    const chart = charts[idx];
+
+    let histograms = [];
 
     // Step 1: read values from all datasets
     chart.data.datasets.forEach(dataset => {
@@ -395,35 +398,25 @@ function createHistograms(chart) {
         });
     });
 
-    // Step 2: clear chart data
-    chart.data.datasets = [];
-    chart.data.labels = [];
-
-    // Step 3: write new histogram data
-    histograms.forEach((hist, idx) => {
-        chart.data.datasets.push({
-            label: hist.label,
-            data: hist.data,
-            backgroundColor: hist.backgroundColor
-        });
+    newChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            datasets: histograms.map(hist => ({
+                label: `${hist.label}`,
+                data: hist.data,
+                backgroundColor: hist.backgroundColor
+            }))
+        },
+        options: {
+            plugins: { zoom: getZoomOptions(), ...plugins },
+            scales: { 
+                x: { title: { display: true, text: chart.options.scales.y.text } },
+                y: { beginAtZero: true, title: { display: true, text: "Count" } }
+            }
+        }
     });
+    charts.push(newChart);
 
-    // linspace between globalMin and globalMax with stepwith minBinSize
-    const labels = [];
-    for (let v = globalMin; v <= globalMax; v += minBinSize) {
-        labels.push(v.toFixed(2));
-    }
-    chart.data.labels = labels;
-
-    chart.config.type = "bar";
-
-    // Step 4: update axes for counts
-    if (chart.options.scales) {
-        chart.options.scales.x = { title: { display: true, text: "Value bins" } };
-        chart.options.scales.y = { beginAtZero: true, title: { display: true, text: "Count" } };
-    }
-
-    chart.update();
 }
 
 
@@ -466,8 +459,7 @@ function renderChart(mode, data) {
         { value: "line-noline", label: "Line (showLine = false)" },
         { value: "bar", label: "Bar Chart" },
         { value: "bubble", label: "Bubble Chart" },
-        { value: "scatter", label: "Scatter" },
-        { value: "histogram", label: "Histogram" },
+        { value: "scatter", label: "Scatter" }
     ];
 
     function createChartTypeDropdown(defaultType, idx, onChange) {
@@ -502,9 +494,6 @@ function renderChart(mode, data) {
         } else if (type === "line-noline") {
             newType = "line";
             showLine = false;
-        } else if (type === "histogram") {
-            createHistograms(chart, idx);
-            return;
         }
 
         chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
@@ -684,6 +673,7 @@ function renderChart(mode, data) {
                     }
                 });
                 charts.push(chart);
+                createHistograms(idx, ctx);
                 continue;
             }
             chart = new Chart(ctx, {
@@ -702,6 +692,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
+            createHistograms(idx, ctx);
             break; // all data in 1 chart
         }
         
@@ -741,6 +732,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
+            createHistograms(idx, ctx);
         }
         saveZoomState();
         return;
