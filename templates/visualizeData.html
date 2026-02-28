@@ -507,7 +507,7 @@ function renderChart(mode, data) {
             chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
-                    datasets: data.filter(skipDeselectedKeys(data_i.key)).map(data_i => ({
+                    datasets: data.filter(data_i => skipDeselectedKeys(data_i.key)).map(data_i => ({
                         label: `${data_i.device_id}:${data_i.key}`,
                         data: transformX(data_i.points),
                     }))
