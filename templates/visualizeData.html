@@ -406,6 +406,40 @@ function createChartTypeDropdown(defaultType, idx, onChange) {
     return select;
 }
 
+function handleChartTypeChange(e) {
+    const idx = parseInt(e.target.dataset.chartIdx);
+    const chart = charts[idx];
+    const type = e.target.value;
+
+    // Update chart type and options
+    let newType = type;
+    let fill = false;
+    let showLine = true;
+    if (type === "line-fill") {
+        newType = "line";
+        fill = true;
+    } else if (type === "line-noline") {
+        newType = "line";
+        showLine = false;
+    }
+
+    chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
+
+    chart.config.type = newType;
+    if (chart.config.type === "line") {
+        chart.data.datasets.forEach(ds => {
+            ds.fill = fill;
+            ds.showLine = showLine;
+        });
+    } else {
+        chart.data.datasets.forEach(ds => {
+            ds.fill = undefined;
+            ds.showLine = undefined;
+        });
+    }
+    chart.update();
+}
+
 function getNewCanvasContext(canvasIdx){
     const container = document.getElementById("chartContainer");
     const dropdown = createChartTypeDropdown(chartTypesSelected[canvasIdx], canvasIdx, handleChartTypeChange);
@@ -529,40 +563,6 @@ function renderChart(mode, data) {
             return decisiion
         }
         return false;
-    }
-
-    function handleChartTypeChange(e) {
-        const idx = parseInt(e.target.dataset.chartIdx);
-        const chart = charts[idx];
-        const type = e.target.value;
-
-        // Update chart type and options
-        let newType = type;
-        let fill = false;
-        let showLine = true;
-        if (type === "line-fill") {
-            newType = "line";
-            fill = true;
-        } else if (type === "line-noline") {
-            newType = "line";
-            showLine = false;
-        }
-
-        chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
-
-        chart.config.type = newType;
-        if (chart.config.type === "line") {
-            chart.data.datasets.forEach(ds => {
-                ds.fill = fill;
-                ds.showLine = showLine;
-            });
-        } else {
-            chart.data.datasets.forEach(ds => {
-                ds.fill = undefined;
-                ds.showLine = undefined;
-            });
-        }
-        chart.update();
     }
 
     const container = document.getElementById("chartContainer");
