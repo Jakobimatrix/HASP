@@ -311,10 +311,17 @@ async function loadPlot() {
 function createHistograms(chart) {
     const histograms = [];
 
+    let globalMin = Infinity;
+    let globalMax = -Infinity;
+    let minBinSize = Infinity;
+
     // Step 1: read values from all datasets
     chart.data.datasets.forEach(dataset => {
         const values = dataset.data.map(p => p.y).sort((a, b) => a - b);
         if (values.length === 0) return;
+
+        console.log(`Creating histogram for dataset "${dataset.label}" with ${values.length} values, min=${values[0]}, max=${values[values.length - 1]},,, from dataset.data:`, dataset.data);
+        console.log(values);
 
         // Freedman-Diaconis bin count
         const numValues = values.length;
@@ -325,7 +332,14 @@ function createHistograms(chart) {
 
         const min = Math.min(...values);
         const max = Math.max(...values);
-        const binSize = (max - min) / bins;
+        let binSize = (globalMax - globalMin) / bins;
+        if (binSize === 0) binSize = 1;
+
+        if (min < globalMin) globalMin = min;
+        if (max > globalMax) globalMax = max;
+        if (minBinSize > binSize) minBinSize = binSize;
+
+        console.log(`Dataset "${dataset.label}": bins=${bins}, min=${min}, max=${max}, binSize=${binSize}`);
 
         const histogramData = new Array(bins).fill(0);
         values.forEach(v => {
@@ -356,8 +370,12 @@ function createHistograms(chart) {
         });
     });
 
-    // Use labels from first histogram (all share same bins)
-    if (histograms.length > 0) chart.data.labels = histograms[0].labels;
+    // linspace between globalMin and globalMax with stepwith minBinSize
+    const labels = [];
+    for (let v = globalMin; v <= globalMax; v += minBinSize) {
+        labels.push(v.toFixed(2));
+    }
+    chart.data.labels = labels;
 
     chart.config.type = "bar";
 
