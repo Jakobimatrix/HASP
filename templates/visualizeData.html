@@ -436,6 +436,10 @@ function createHistograms(idx) {
             backgroundColor: dataset.backgroundColor || "rgba(75,192,192,0.5)"
         });
     });
+
+    const canvas = document.createElement("canvas");
+    canvas.style.marginBottom = "40px";
+    container.appendChild(canvas);
     const ctx = canvas.getContext("2d");
     const newChart = new Chart(ctx, {
         type: "bar",
