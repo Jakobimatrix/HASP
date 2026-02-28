@@ -271,12 +271,10 @@ function renderChart(mode, data) {
 
     const source = document.getElementById("sourceSelect").value;
     
-    function skipDeselectedKeys(pointsData) {
+    function skipDeselectedKeys(key) {
         if(source == "report_id"){
             const deselectedKeys = getSelectedValues("keysToDeselect");
-            console.log("skipDeselectedKeys", {deselectedKeys, pointsData});
-            console.log("Checking if key is in deselected:", pointsData.key, deselectedKeys.includes(pointsData.key));
-            return deselectedKeys.includes(pointsData.key);
+            return deselectedKeys.includes(key);
         }
         return false;
     }
@@ -477,10 +475,9 @@ function renderChart(mode, data) {
         }
 
         for (let i = 0; i < data.length; i++) {
-            if(skipDeselectedKeys(data[i])){
+            if(split && skipDeselectedKeys(data[i].key)){
                 continue;
             }
-            const s = data[i];
             const defaultType = "line";
             const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
             container.appendChild(dropdown);
@@ -494,8 +491,8 @@ function renderChart(mode, data) {
                     type: defaultType,
                     data: {
                         datasets: [{
-                            label: `${s.device_id}:${s.key}`,
-                            data: transformX(s.points),
+                            label: `${data[i].device_id}:${data[i].key}`,
+                            data: transformX(data[i].points),
                         }]
                     },
                     options: {
@@ -506,12 +503,13 @@ function renderChart(mode, data) {
                 charts.push(chart);
                 continue;
             }
+
             chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
-                    datasets: data.map(s => ({
-                        label: `${s.device_id}:${s.key}`,
-                        data: transformX(s.points),
+                    datasets: data.filter(skipDeselectedKeys(data_i.key)).map(data_i => ({
+                        label: `${data_i.device_id}:${data_i.key}`,
+                        data: transformX(data_i.points),
                     }))
                 },
                 options: {
@@ -530,9 +528,6 @@ function renderChart(mode, data) {
     // XY mode
     else if (mode === "xy") {        
         for (let i = 0; i < data.length; i++) {
-            if(skipDeselectedKeys(data[i])){
-                continue;
-            }
             const s = data[i];
             const defaultType = "scatter";
             const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
