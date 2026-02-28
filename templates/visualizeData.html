@@ -542,7 +542,7 @@ function renderChart(mode, data) {
                 type: chartTypesSelected[i],
                 data: {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
-                        label: `${data_i.device_id}:${data_i.key}`,
+                        label: `${data_i.device_id}:${data_i.key} ${data_i.report_id ? `[Report ID: ${data_i.report_id}]` : ''}`,
                         data: transformX(data_i.points),
                     }))
                 },
