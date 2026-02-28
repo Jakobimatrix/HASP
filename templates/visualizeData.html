@@ -271,7 +271,9 @@ function renderChart(mode, data) {
     const deselectedKeys = getSelectedValues("keysToDeselect");
 
     function skipDeselectedKeys(pointsData) {
+        console.log("skipDeselectedKeys", {source, deselectedKeys, pointsData, });
         if(source == "report_id"){
+            console.log("Checking if key should be deselected:", pointsData.key, deselectedKeys.includes(pointsData.key));
             return !deselectedKeys.includes(pointsData.key);
         }
         return false;
