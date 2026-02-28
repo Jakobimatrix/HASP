@@ -499,6 +499,7 @@ function createHistograms(idx) {
             min: min,
             max: max,
             binSize: binSize,
+            numValues: numValues,
             backgroundColor: dataset.backgroundColor || "rgba(75,192,192,0.5)"
         });
     });
@@ -510,17 +511,33 @@ function createHistograms(idx) {
                 label: hist.label,
                 data: hist.data.map((count, i) => ({
                     x: hist.min + i * hist.binSize + hist.binSize / 2,
-                    y: count
+                    y: count/hist.numValues,
+                    count: count
                 })),
-                backgroundColor: hist.backgroundColor
+                backgroundColor: hist.backgroundColor,
+                barThickness: hist.binSize * 0.9,
+                maxBarThickness: 100
             }))
         },
         options: {
             parsing: false,
-            plugins: { zoom: getZoomOptions() },
+            plugins: { 
+                zoom: getZoomOptions(),
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const raw = context.raw;
+                            const percent = (raw.y * 100).toFixed(2);
+                            return `${context.dataset.label}: ${raw.count} (${percent}%)`;
+                        }
+                    }
+                }
+            },
             scales: {
                 x: {
                     type: "linear",
+                    min: globalMin,
+                    max: globalMax,
                     title: { display: true, text: chart.options.scales.y?.title?.text || "Value" }
                 },
                 y: {
