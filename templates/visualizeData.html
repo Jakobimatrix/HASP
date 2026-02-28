@@ -107,6 +107,7 @@ function autoloadPlot() {
 }
 
 function deselectKeyAndRenderChart(){
+    console.log("deselectKeyAndRenderChart called");
     const mode = document.getElementById("modeSelect").value;
     lastDeselectedKeys = getSelectedValues("keysToDeselect");
     renderChart(mode, lastSeries);
@@ -231,16 +232,16 @@ async function loadPlot() {
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
         `;
-        keyDeselctorCOntainer = document.getElementById("keysToDeselect");
+        const keyDeselctorContainer = document.getElementById("keysToDeselect");
 
-        for(let i=0; i<keyDeselctorCOntainer.options.length; i++){
-            const option = keyDeselctorCOntainer.options[i];
+        for(let i=0; i<keyDeselctorContainer.options.length; i++){
+            const option = keyDeselctorContainer.options[i];
             if(lastDeselectedKeys.includes(option.value)){
                 option.selected = true;
             }
         }
 
-        keyDeselctorCOntainer.addEventListener("click", deselectKeyAndRenderChart);
+        keyDeselctorContainer.addEventListener("click", deselectKeyAndRenderChart);
     }
 
     if (source == "report_id") {
@@ -268,12 +269,12 @@ function renderChart(mode, data) {
     clearCharts();
 
     const source = document.getElementById("sourceSelect").value;
-    const deselectedKeys = getSelectedValues("keysToDeselect");
-
+    
     function skipDeselectedKeys(pointsData) {
-        console.log("skipDeselectedKeys", {source, deselectedKeys, pointsData, });
         if(source == "report_id"){
-            console.log("Checking if key should be deselected:", pointsData.key, deselectedKeys.includes(pointsData.key));
+            const deselectedKeys = getSelectedValues("keysToDeselect");
+            console.log("skipDeselectedKeys", {deselectedKeys, pointsData});
+            console.log("Checking if key is in deselected:", pointsData.key, deselectedKeys.includes(pointsData.key));
             return !deselectedKeys.includes(pointsData.key);
         }
         return false;
