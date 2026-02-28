@@ -520,8 +520,7 @@ function renderChart(mode, data) {
             let chart = null;
             if (split){
                 chart = new Chart(ctx, {
-                    type: chartTypesSelected[i],
-
+                    type: chartTypesSelected[i].type,
                     data: {
                         datasets: [{
                             label: `${data[i].device_id}:${data[i].key}${data[i].report_id ? ` [Report ID: ${data[i].report_id}]` : ''}`,
@@ -539,7 +538,7 @@ function renderChart(mode, data) {
                 continue;
             }
             chart = new Chart(ctx, {
-                type: chartTypesSelected[i],
+                type: chartTypesSelected[i].type,
                 data: {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
                         label: `${data_i.device_id}:${data_i.key}${data_i.report_id ? ` [Report ID: ${data_i.report_id}]` : ''}`,
