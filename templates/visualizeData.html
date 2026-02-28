@@ -381,7 +381,7 @@ function getZoomOptions() {
     };
 }
 
-function createHistograms(idx, ctx) {
+function createHistograms(idx) {
 
     let globalMin = Infinity;
     let globalMax = -Infinity;
@@ -436,7 +436,7 @@ function createHistograms(idx, ctx) {
             backgroundColor: dataset.backgroundColor || "rgba(75,192,192,0.5)"
         });
     });
-
+    const ctx = canvas.getContext("2d");
     const newChart = new Chart(ctx, {
         type: "bar",
         data: {
@@ -675,7 +675,7 @@ function renderChart(mode, data) {
                     }
                 });
                 charts.push(chart);
-                createHistograms(i, ctx);
+                createHistograms(i);
                 continue;
             }
             chart = new Chart(ctx, {
@@ -694,7 +694,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(i, ctx);
+            createHistograms(i);
             break; // all data in 1 chart
         }
         
@@ -734,7 +734,7 @@ function renderChart(mode, data) {
                 }
             });
             charts.push(chart);
-            createHistograms(i, ctx);
+            createHistograms(i);
         }
         saveZoomState();
         return;
