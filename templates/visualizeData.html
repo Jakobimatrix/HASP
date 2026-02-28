@@ -309,6 +309,32 @@ async function loadPlot() {
     renderChart(mode, data);
 }
 
+function createHistogram(chart, idx) {
+    const dataset = chart.data.datasets[0];
+    const values = dataset.data.map(p => p.y);
+    // number of bins calculated with Freedman-Diaconis rule
+    const numValues = values.length;
+    const q75 = values[Math.floor(numValues * 0.75)];
+    const q25 = values[Math.floor(numValues * 0.25)];
+    const iqr = q75 - q25;
+    const bins = Math.max(1, Math.ceil(2 * iqr / (Math.pow(numValues, 1/3))));
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const binSize = (max - min) / bins;
+    const histogramData = new Array(bins).fill(0);
+    values.forEach(v => {
+        if (v >= min && v <= max) {
+            const binIndex = Math.min(Math.floor((v - min) / binSize), bins - 1);
+            histogramData[binIndex]++;
+        }
+    });
+    chart.config.type = "bar";
+    chart.data.labels = histogramData.map((_, i) => (min + i * binSize).toFixed(2));
+    chart.data.datasets[0].data = histogramData;
+    chart.update();
+}
+
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
@@ -349,7 +375,8 @@ function renderChart(mode, data) {
         { value: "line-noline", label: "Line (showLine = false)" },
         { value: "bar", label: "Bar Chart" },
         { value: "bubble", label: "Bubble Chart" },
-        { value: "scatter", label: "Scatter" }
+        { value: "scatter", label: "Scatter" },
+        { value: "histogram", label: "Histogram" },
     ];
 
     function createChartTypeDropdown(defaultType, idx, onChange) {
@@ -384,6 +411,9 @@ function renderChart(mode, data) {
         } else if (type === "line-noline") {
             newType = "line";
             showLine = false;
+        } else if (type === "histogram") {
+            createHistogram(chart, idx);
+            return;
         }
 
         chartTypesSelected[idx] = { type: newType, fill: fill, showLine:showLine };
