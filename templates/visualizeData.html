@@ -342,6 +342,15 @@ function calcBucketSizeSimpleRule(values) {
     return Math.ceil(Math.sqrt(values.length));
 }
 
+function saveZoomState() {
+    zoomHistory = zoomHistory.slice(0, zoomHistoryIndex + 1);
+    zoomHistory.push(charts.map(c => ({
+        x: c.scales.x.min !== undefined || c.scales.x.max !== undefined ? { min: c.scales.x.min, max: c.scales.x.max } : null,
+        y: c.scales.y.min !== undefined || c.scales.y.max !== undefined ? { min: c.scales.y.min, max: c.scales.y.max } : null
+    })));
+    zoomHistoryIndex++;
+}
+
 function syncXZoom({chart}) {
     const syncX = document.getElementById("syncXZoomToggle").checked;
     if (!syncX) return;
@@ -356,6 +365,7 @@ function syncXZoom({chart}) {
 }
 
 function getZoomOptions() {
+    const syncX = document.getElementById("syncXZoomToggle").checked;
     return {
         pan: { enabled: true, mode: zoomMode },
         zoom: {
@@ -468,16 +478,6 @@ function renderChart(mode, data) {
             return decisiion
         }
         return false;
-    }
-
-    // Helper for zoom state
-    function saveZoomState() {
-        zoomHistory = zoomHistory.slice(0, zoomHistoryIndex + 1);
-        zoomHistory.push(charts.map(c => ({
-            x: c.scales.x.min !== undefined || c.scales.x.max !== undefined ? { min: c.scales.x.min, max: c.scales.x.max } : null,
-            y: c.scales.y.min !== undefined || c.scales.y.max !== undefined ? { min: c.scales.y.min, max: c.scales.y.max } : null
-        })));
-        zoomHistoryIndex++;
     }
 
     // Chart type options
