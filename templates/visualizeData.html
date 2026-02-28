@@ -163,6 +163,9 @@ async function loadKeys() {
         document.getElementById("xKey").addEventListener("change", autoloadPlot);
         document.getElementById("yKey").addEventListener("change", autoloadPlot);
     }
+    
+    const containerKeyDeSelect = document.getElementById("keyDeselectors");
+    containerKeyDeSelect.innerHTML = "";
 }
 
 async function loadPlot() {
@@ -471,7 +474,7 @@ function renderChart(mode, data) {
         }
 
         for (let i = 0; i < data.length; i++) {
-            if(skipDeselectedKeys(data[i].points)){
+            if(skipDeselectedKeys(data[i])){
                 continue;
             }
             const s = data[i];
@@ -524,7 +527,7 @@ function renderChart(mode, data) {
     // XY mode
     else if (mode === "xy") {        
         for (let i = 0; i < data.length; i++) {
-            if(skipDeselectedKeys(data[i].points)){
+            if(skipDeselectedKeys(data[i])){
                 continue;
             }
             const s = data[i];
