@@ -247,6 +247,7 @@ async function loadPlot() {
     if (source == "report_id") {
         lastSeries = data.data; 
         renderChart(mode, data.data);
+        return;
     }
     lastSeries = data; 
     renderChart(mode, data);
@@ -266,7 +267,6 @@ function clearCharts() {
 }
 
 function renderChart(mode, data) {
-    console.log("Rendering chart with mode:", mode, "and data:", data);
     clearCharts();
 
     const source = document.getElementById("sourceSelect").value;
@@ -275,7 +275,6 @@ function renderChart(mode, data) {
         if(source == "report_id"){
             const deselectedKeys = getSelectedValues("keysToDeselect");
             const decisiion = deselectedKeys.includes(key);
-            console.log(`Checking if key "${key}" should be skipped based on deselected keys:`, deselectedKeys, "Decision:", decisiion);
             return decisiion
         }
         return false;
@@ -477,7 +476,6 @@ function renderChart(mode, data) {
         }
 
         for (let i = 0; i < data.length; i++) {
-            console.log("Processing series", i, "with key", data[i].key);
             if(split && skipDeselectedKeys(data[i].key)){
                 continue;
             }
@@ -507,7 +505,6 @@ function renderChart(mode, data) {
                 charts.push(chart);
                 continue;
             }
-            console.log("Creating combined chart with length", data.length, "skipping keys:", data.filter(d => skipDeselectedKeys(d.key)).map(d => d.key));
             chart = new Chart(ctx, {
                 type: defaultType,
                 data: {
