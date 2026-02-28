@@ -383,6 +383,8 @@ function getZoomOptions() {
 
 function getNewCanvasContext(){
     const container = document.getElementById("chartContainer");
+    const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
+    container.appendChild(dropdown);
     const canvas = document.createElement("canvas");
     canvas.style.marginBottom = "40px";
     container.appendChild(canvas);
@@ -441,6 +443,9 @@ function createHistograms(idx) {
             label: dataset.label + " (histogram)",
             data: histogramData,
             labels: labels,
+            min: min,
+            max: max,
+            binSize: binSize,
             backgroundColor: dataset.backgroundColor || "rgba(75,192,192,0.5)"
         });
     });
@@ -449,16 +454,26 @@ function createHistograms(idx) {
         type: "bar",
         data: {
             datasets: histograms.map(hist => ({
-                label: `${hist.label}`,
-                data: hist.data,
+                label: hist.label,
+                data: hist.data.map((count, i) => ({
+                    x: hist.min + i * hist.binSize + hist.binSize / 2,
+                    y: count
+                })),
                 backgroundColor: hist.backgroundColor
             }))
         },
         options: {
-            plugins: { zoom: getZoomOptions()},
-            scales: { 
-                x: { title: { display: true, text: chart.options.scales.y.text } },
-                y: { beginAtZero: true, title: { display: true, text: "Count" } }
+            parsing: false,   // IMPORTANT
+            plugins: { zoom: getZoomOptions() },
+            scales: {
+                x: {
+                    type: "linear",
+                    title: { display: true, text: chart.options.scales.y?.title?.text || "Value" }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: "Count" }
+                }
             }
         }
     });
@@ -659,7 +674,6 @@ function renderChart(mode, data) {
             if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = { type: defaultType, fill: false, showLine: true };
             }
-            const dropdown = createChartTypeDropdown(chartTypesSelected[i].type, i, handleChartTypeChange);
             const ctx = getNewCanvasContext();
             let chart = null;
             if (split){
@@ -714,7 +728,6 @@ function renderChart(mode, data) {
             if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = { type: defaultType, fill: undefined, showLine: undefined };
             }
-            const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             const chart = new Chart(getNewCanvasContext(), {
                 type: chartTypesSelected[i].type,
                 data: {
