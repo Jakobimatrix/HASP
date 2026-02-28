@@ -502,18 +502,25 @@ function createHistograms(idx) {
         });
     });
 
+    if(chartTypesSelected.length <= idx + 1){
+        chartTypesSelected[idx + 1] = { type: "bar", fill: undefined, showLine: undefined };
+    }
     const newChart = new Chart(getNewCanvasContext(idx+1), {
         type: "bar",
         data: {
             datasets: histograms.map(hist => ({
                 label: hist.label,
-                data: hist.data.map((count, i) => ({
-                    x: hist.min + i * hist.binSize + hist.binSize / 2,
-                    y: count/hist.numValues,
-                    count: count
-                })),
-                backgroundColor: hist.backgroundColor,
-                barThickness: hist.binSize
+                data: hist.data.map((count, i) => {
+                    const binStart = hist.min + i * hist.binSize;
+                    const binEnd   = binStart + hist.binSize;
+
+                    return {
+                        x: [binStart, binEnd],   // DATA-BASED WIDTH
+                        y: count / hist.numValues,
+                        count: count
+                    };
+                }),
+                backgroundColor: hist.backgroundColor
             }))
         },
         options: {
