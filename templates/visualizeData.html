@@ -513,6 +513,7 @@ function renderChart(mode, data) {
             if(chartTypesSelected.length < i){
                 chartTypesSelected[i] = defaultType;
             }
+            console.log(chartTypesSelected, i);
             const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
@@ -526,7 +527,7 @@ function renderChart(mode, data) {
                     type: chartTypesSelected[i],
                     data: {
                         datasets: [{
-                            label: `${data[i].device_id}:${data[i].key}`,
+                            label: `${data[i].device_id}:${data[i].key}${data[i].report_id ? ` [Report ID: ${data[i].report_id}]` : ''}`,
                             data: transformX(data[i].points),
                         }]
                     },
@@ -542,7 +543,7 @@ function renderChart(mode, data) {
                 type: chartTypesSelected[i],
                 data: {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
-                        label: `${data_i.device_id}:${data_i.key} ${data_i.report_id ? `[Report ID: ${data_i.report_id}]` : ''}`,
+                        label: `${data_i.device_id}:${data_i.key}${data_i.report_id ? ` [Report ID: ${data_i.report_id}]` : ''}`,
                         data: transformX(data_i.points),
                     }))
                 },
