@@ -477,7 +477,6 @@ function createHistograms(idx) {
         const min = Math.min(...values);
         const max = Math.max(...values);
         let binSize = (max - min) / bins;
-        console.log(`Dataset "${dataset.label}": numValues=${numValues}, min=${min}, max=${max}, bins=${bins}, binSize=${binSize}`);
 
         if (min < globalMin) globalMin = min;
         if (max > globalMax) globalMax = max;
@@ -502,10 +501,12 @@ function createHistograms(idx) {
         });
     });
 
-    if(chartTypesSelected.length <= idx + 1){
-        chartTypesSelected[idx + 1] = {label: "line-noline-fill", type: "line", fill: true, showLine: true };
+    const newId = idx + 1;
+
+    if(chartTypesSelected.length <= newId){
+        chartTypesSelected[newId] = {label: "line-fill", type: "line", fill: true, showLine: true };
     }
-    const newChart = new Chart(getNewCanvasContext(idx+1), {
+    const newChart = new Chart(getNewCanvasContext(newId), {
         type: "line",
         data: {
             datasets: histograms.map(hist => ({
@@ -515,6 +516,8 @@ function createHistograms(idx) {
                     y: count/hist.numValues,
                     count: count
                 })),
+                fill: chartTypesSelected[newId].fill,
+                showLine: chartTypesSelected[newId].showLine,
                 backgroundColor: hist.backgroundColor,
             }))
         },
@@ -547,7 +550,7 @@ function createHistograms(idx) {
         }
     });
     charts.push(newChart);
-    return idx + 2;
+    return newId + 1;
 }
 
 
