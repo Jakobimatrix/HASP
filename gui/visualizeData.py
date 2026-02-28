@@ -118,8 +118,8 @@ def register(app):
 
                 for key, groupedRows in grouped.items():
                     result.append({
-                        "device_id": groupedRows[0][2] + ":" + id,
-                        "key": groupedRows[0][3] + ":" + id,
+                        "device_id": groupedRows[0][2],
+                        "key": groupedRows[0][3],
                         "points": [
                             {
                                 "t": r[0] + r[1] / 1e9,
@@ -129,20 +129,6 @@ def register(app):
                         ]
                     })
             return jsonify(result)
-
-            #allDataWithReportId = getAllDataWithAReportId()
-            #reprallData_ids = []
-
-            #foundIds = []
-
-            #for r in allDataWithReportId:
-            #    id = r[5]  # report_id
-            #    reprallData_ids.append(repr(id))
-            #    if id in ids:
-            #        foundIds.append(id)
-
-
-            #return jsonify({"data": result, "report_ids": ids, "debug_rows": rows, "debug_groups": grouped, "repr_given_ids": reprgivenIds, "repr_all_ids": reprallData_ids, "found_ids": foundIds})
 
         except Exception as e:
             import traceback
