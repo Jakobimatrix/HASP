@@ -215,12 +215,11 @@ async function loadPlot() {
     const containerKeyDeSelect = document.getElementById("keyDeselectors");
     containerKeyDeSelect.innerHTML = "";
 
-    if(source == "report_id") {
+    if(source == "device_id"){
         document.getElementById("keyDeselectorsHead").style.display = "none";
-    } else if( source === "device_id" ){
+    } else if( source === "report_id" ){
         document.getElementById("keyDeselectorsHead").style.display = "block";
         containerKeyDeSelect.style.display = "block";
-        console.log("Data given:", data);
         containerKeyDeSelect.innerHTML = `
             <select id="keysToDeselect" multiple size="6">
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
