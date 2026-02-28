@@ -274,7 +274,9 @@ function renderChart(mode, data) {
     function skipDeselectedKeys(key) {
         if(source == "report_id"){
             const deselectedKeys = getSelectedValues("keysToDeselect");
-            return deselectedKeys.includes(key);
+            const decisiion = deselectedKeys.includes(key);
+            console.log(`Checking if key "${key}" should be skipped based on deselected keys:`, deselectedKeys, "Decision:", decisiion);
+            return decisiion
         }
         return false;
     }
