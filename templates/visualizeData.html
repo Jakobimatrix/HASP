@@ -510,7 +510,7 @@ function renderChart(mode, data) {
                 continue;
             }
             const defaultType = "line";
-            if(chartTypesSelected.length < i){
+            if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = defaultType;
             }
             console.log(chartTypesSelected, i);
@@ -565,7 +565,7 @@ function renderChart(mode, data) {
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
             const defaultType = "scatter";
-            if(chartTypesSelected.length < i){
+            if(chartTypesSelected.length <= i){
                 chartTypesSelected[i] = defaultType;
             }
             const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
