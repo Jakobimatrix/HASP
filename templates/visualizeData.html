@@ -83,6 +83,7 @@
 let lastSeries = [];
 let lastDeselectedKeys = [];
 let charts = [];
+let chartsHistograms = [];
 let zoomMode = 'xy'; // default zoom mode
 let zoomHistory = [];
 let zoomHistoryIndex = -1;
@@ -436,7 +437,7 @@ function createHistograms(idx, ctx) {
         });
     });
 
-    newChart = new Chart(ctx, {
+    const newChart = new Chart(ctx, {
         type: "bar",
         data: {
             datasets: histograms.map(hist => ({
@@ -453,14 +454,15 @@ function createHistograms(idx, ctx) {
             }
         }
     });
-    charts.push(newChart);
-
+    chartsHistograms.push(newChart);
 }
 
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
+    chartsHistograms.forEach(c => c.destroy());
     charts = [];
+    chartsHistograms = [];
     document.getElementById("chartContainer").innerHTML = "";
     zoomHistory = [];
     zoomHistoryIndex = -1;
