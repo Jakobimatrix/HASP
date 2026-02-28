@@ -116,11 +116,11 @@ def register(app):
                     result.append({
                         "device_id": groupedRows[0][2],
                         "key": groupedRows[0][3],
+                        "report_id": id,
                         "points": [
                             {
                                 "t": r[0] + r[1] / 1e9,
-                                "v": float(r[4]),
-                                "report_id": id
+                                "v": float(r[4])
                             }
                             for r in groupedRows
                         ]

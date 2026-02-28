@@ -79,9 +79,14 @@
     <div id="chartContainer"></div>
 </div>
 <script>
-let chart = null;
+
 let lastSeries = [];
 let lastDeselectedKeys = [];
+let charts = [];
+let zoomMode = 'xy'; // default zoom mode
+let zoomHistory = [];
+let zoomHistoryIndex = -1;
+let chartTypesSelected = [];
 
 /* helpers */
 function getSelectedValues(id) {
@@ -91,8 +96,31 @@ function getSelectedValues(id) {
         .map(o => o.value);
 }
 
+function onModeSelect(){
+    chartTypesSelected = [];
+    loadKeys();
+}
+
+function onSplitPlotsToggle(){
+    const split = document.getElementById("splitPlots").checked;
+    if(chartTypesSelected[0]){
+        if(split){
+            for(let i=0; i<lastSeries.length; i++){
+                if(chartTypesSelected.length < i){
+                    chartTypesSelected[i] = chartTypesSelected[0];
+                }
+            }
+        }else{
+            first = chartTypesSelected[0];
+            chartTypesSelected = [];
+            chartTypesSelected[0] = first;
+        }
+    }
+    autoloadPlot();
+}
+
 document.getElementById("deviceSelect").addEventListener("change", loadKeys);
-document.getElementById("modeSelect").addEventListener("change", loadKeys);
+document.getElementById("modeSelect").addEventListener("change", onModeSelect);
 document.getElementById("sourceSelect").addEventListener("change", loadKeys);
 
 document.getElementById("removeOffsetToggle").addEventListener("change", autoloadPlot);
@@ -148,7 +176,7 @@ async function loadKeys() {
                 One plot per key
             </label>
         `;
-        document.getElementById("splitPlots").addEventListener("change", autoloadPlot);
+        document.getElementById("splitPlots").addEventListener("change", onSplitPlotsToggle);
         document.getElementById("keys").addEventListener("change", autoloadPlot);
     } else {
         containerKeySelect.innerHTML = `
@@ -253,10 +281,6 @@ async function loadPlot() {
     renderChart(mode, data);
 }
 
-let charts = [];
-let zoomMode = 'xy'; // default zoom mode
-let zoomHistory = [];
-let zoomHistoryIndex = -1;
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
@@ -321,6 +345,12 @@ function renderChart(mode, data) {
         const idx = parseInt(e.target.dataset.chartIdx);
         const chart = charts[idx];
         const type = e.target.value;
+        if (chartTypesSelected.length < idx) {
+            chartTypesSelected = [];
+        }else{
+            chartTypesSelected[idx] = type;
+        }
+
         // Update chart type and options
         let newType = type;
         let fill = false;
@@ -480,7 +510,10 @@ function renderChart(mode, data) {
                 continue;
             }
             const defaultType = "line";
-            const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
+            if(chartTypesSelected.length < i){
+                chartTypesSelected[i] = defaultType;
+            }
+            const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             canvas.style.marginBottom = "40px";
@@ -490,7 +523,7 @@ function renderChart(mode, data) {
             if (split){
                 console.log("Creating separate chart for series", i, "with key", data[i].key);
                 chart = new Chart(ctx, {
-                    type: defaultType,
+                    type: chartTypesSelected[i],
                     data: {
                         datasets: [{
                             label: `${data[i].device_id}:${data[i].key}`,
@@ -506,7 +539,7 @@ function renderChart(mode, data) {
                 continue;
             }
             chart = new Chart(ctx, {
-                type: defaultType,
+                type: chartTypesSelected[i],
                 data: {
                     datasets: data.filter(data_i => !skipDeselectedKeys(data_i.key)).map(data_i => ({
                         label: `${data_i.device_id}:${data_i.key}`,
@@ -531,13 +564,16 @@ function renderChart(mode, data) {
         for (let i = 0; i < data.length; i++) {
             const s = data[i];
             const defaultType = "scatter";
-            const dropdown = createChartTypeDropdown(defaultType, i, handleChartTypeChange);
+            if(chartTypesSelected.length < i){
+                chartTypesSelected[i] = defaultType;
+            }
+            const dropdown = createChartTypeDropdown(chartTypesSelected[i], i, handleChartTypeChange);
             container.appendChild(dropdown);
             const canvas = document.createElement("canvas");
             container.appendChild(canvas);
             const ctx = canvas.getContext("2d");
             const chart = new Chart(ctx, {
-                type: defaultType,
+                type: chartTypesSelected[i],
                 data: {
                     datasets: [{
                         label: `${s.x_key || 'X'}:${s.y_key || 'Y'}`,
