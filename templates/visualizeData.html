@@ -19,7 +19,6 @@
         <div class="col-12 col-md-6">
             <h5>2. Select Key(s)</h5>
             <div id="keySelectors"></div>
-            <h5 id="keyDeselectorsHead">3. Deselect Keys</h5>
             <div id="keyDeselectors"></div>
         </div>
     </div>
@@ -214,13 +213,10 @@ async function loadPlot() {
 
     const containerKeyDeSelect = document.getElementById("keyDeselectors");
     containerKeyDeSelect.innerHTML = "";
-
-    if(source == "device_id"){
-        document.getElementById("keyDeselectorsHead").style.display = "none";
-    } else if( source === "report_id" ){
-        document.getElementById("keyDeselectorsHead").style.display = "block";
+    if( source === "report_id" ){
         containerKeyDeSelect.style.display = "block";
         containerKeyDeSelect.innerHTML = `
+            <h5>Deselect Keys</h5>
             <select id="keysToDeselect" multiple size="6">
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
@@ -256,6 +252,7 @@ function renderChart(mode, data) {
     const deselectedKeys = getSelectedValues("keysToDeselect");
 
     function skipDeselectedKeys(points) {
+        console.log("skipDeselectedKeys", {source, deselectedKeys, points});
         if(source == "report_id"){
             return points.filter(p => !deselectedKeys.includes(p.key));
         }
