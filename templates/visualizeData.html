@@ -163,7 +163,7 @@ async function loadKeys() {
         document.getElementById("xKey").addEventListener("change", autoloadPlot);
         document.getElementById("yKey").addEventListener("change", autoloadPlot);
     }
-    
+
     const containerKeyDeSelect = document.getElementById("keyDeselectors");
     containerKeyDeSelect.innerHTML = "";
 }
@@ -270,10 +270,9 @@ function renderChart(mode, data) {
     const source = document.getElementById("sourceSelect").value;
     const deselectedKeys = getSelectedValues("keysToDeselect");
 
-    function skipDeselectedKeys(points) {
-        console.log("skipDeselectedKeys", {source, deselectedKeys, points});
+    function skipDeselectedKeys(pointsData) {
         if(source == "report_id"){
-            return points.filter(p => !deselectedKeys.includes(p.key));
+            return !deselectedKeys.includes(pointsData.key);
         }
         return false;
     }
