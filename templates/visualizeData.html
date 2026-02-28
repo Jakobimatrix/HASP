@@ -220,6 +220,7 @@ async function loadPlot() {
     } else if( source === "device_id" ){
         document.getElementById("keyDeselectorsHead").style.display = "block";
         containerKeyDeSelect.style.display = "block";
+        console.log("Data given:", data);
         containerKeyDeSelect.innerHTML = `
             <select id="keysToDeselect" multiple size="6">
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
