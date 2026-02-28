@@ -204,7 +204,7 @@ async function loadPlot() {
         lastSeries = data.data; 
     } else if (source === "device_id") {
         // expect plain array of series
-        if (!data.data || !Array.isArray(data.data)) {
+        if (!data || !Array.isArray(data)) {
             console.error("Expected data array, got:", data);
             alert("Backend error – see console");
             return;
