@@ -453,7 +453,6 @@ function createHistograms(idx) {
 
     let globalMin = Infinity;
     let globalMax = -Infinity;
-    let minBinSize = Infinity;
 
     const chart = charts[idx];
 
@@ -478,11 +477,10 @@ function createHistograms(idx) {
         const min = Math.min(...values);
         const max = Math.max(...values);
         let binSize = (max - min) / bins;
-        if (binSize === 0) binSize = 1;
+        console.log(`Dataset "${dataset.label}": numValues=${numValues}, min=${min}, max=${max}, bins=${bins}, binSize=${binSize}`);
 
         if (min < globalMin) globalMin = min;
         if (max > globalMax) globalMax = max;
-        if (minBinSize > binSize) minBinSize = binSize;
 
         const histogramData = new Array(bins).fill(0);
         values.forEach(v => {
