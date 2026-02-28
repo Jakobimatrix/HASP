@@ -342,6 +342,34 @@ function calcBucketSizeSimpleRule(values) {
     return Math.ceil(Math.sqrt(values.length));
 }
 
+function syncXZoom({chart}) {
+    const syncX = document.getElementById("syncXZoomToggle").checked;
+    if (!syncX) return;
+    const xScale = chart.scales.x;
+    charts.forEach(c => {
+        if (c !== chart) {
+            c.scales.x.options.min = xScale.min;
+            c.scales.x.options.max = xScale.max;
+            c.update();
+        }
+    });
+}
+
+function getZoomOptions() {
+    return {
+        pan: { enabled: true, mode: zoomMode },
+        zoom: {
+            wheel: { enabled: false },
+            pinch: { enabled: true },
+            mode: zoomMode,
+            drag: { enabled: true },
+            onZoom: syncX ? syncXZoom : undefined,
+            onZoomComplete: saveZoomState
+        },
+        limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
+    };
+}
+
 function createHistograms(idx, ctx) {
 
     let globalMin = Infinity;
@@ -408,7 +436,7 @@ function createHistograms(idx, ctx) {
             }))
         },
         options: {
-            plugins: { zoom: getZoomOptions(), ...plugins },
+            plugins: { zoom: getZoomOptions()},
             scales: { 
                 x: { title: { display: true, text: chart.options.scales.y.text } },
                 y: { beginAtZero: true, title: { display: true, text: "Count" } }
@@ -511,34 +539,6 @@ function renderChart(mode, data) {
             });
         }
         chart.update();
-    }
-
-    const syncX = document.getElementById("syncXZoomToggle").checked;
-    function syncXZoom({chart}) {
-        if (!syncX) return;
-        const xScale = chart.scales.x;
-        charts.forEach(c => {
-            if (c !== chart) {
-                c.scales.x.options.min = xScale.min;
-                c.scales.x.options.max = xScale.max;
-                c.update();
-            }
-        });
-    }
-
-    function getZoomOptions() {
-        return {
-            pan: { enabled: true, mode: zoomMode },
-            zoom: {
-                wheel: { enabled: false },
-                pinch: { enabled: true },
-                mode: zoomMode,
-                drag: { enabled: true },
-                onZoom: syncX ? syncXZoom : undefined,
-                onZoomComplete: saveZoomState
-            },
-            limits: { x: { minRange: 0.0001 }, y: { minRange: 0.0001 } }
-        };
     }
 
     const container = document.getElementById("chartContainer");
