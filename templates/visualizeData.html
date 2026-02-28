@@ -83,7 +83,6 @@
 let lastSeries = [];
 let lastDeselectedKeys = [];
 let charts = [];
-let chartsHistograms = [];
 let zoomMode = 'xy'; // default zoom mode
 let zoomHistory = [];
 let zoomHistoryIndex = -1;
@@ -465,9 +464,6 @@ function createHistograms(idx) {
         const values = dataset.data.map(p => p.y).sort((a, b) => a - b);
         if (values.length === 0) return;
 
-        console.log(`Creating histogram for dataset "${dataset.label}" with ${values.length} values, min=${values[0]}, max=${values[values.length - 1]},,, from dataset.data:`, dataset.data);
-        console.log(values);
-
         function percentile(values, p) {
             const n = (values.length - 1) * p;
             const lower = Math.floor(n);
@@ -487,8 +483,6 @@ function createHistograms(idx) {
         if (min < globalMin) globalMin = min;
         if (max > globalMax) globalMax = max;
         if (minBinSize > binSize) minBinSize = binSize;
-
-        console.log(`Dataset "${dataset.label}": bins=${bins}, min=${min}, max=${max}, binSize=${binSize}`);
 
         const histogramData = new Array(bins).fill(0);
         values.forEach(v => {
@@ -522,7 +516,7 @@ function createHistograms(idx) {
             }))
         },
         options: {
-            parsing: false,   // IMPORTANT
+            parsing: false,
             plugins: { zoom: getZoomOptions() },
             scales: {
                 x: {
@@ -536,7 +530,7 @@ function createHistograms(idx) {
             }
         }
     });
-    chartsHistograms.push(newChart);
+    charts.push(newChart);
     return idx + 2;
 }
 
