@@ -101,11 +101,14 @@ function onModeSelect(){
     loadKeys();
 }
 
-function toggleSelectAll(id, doSelect){
+function toggleSelectAll(id, doSelect, runFunction) {
     const select = document.getElementById(id);
     if (!select) return;
     for(let i=0; i<select.options.length; i++){
         select.options[i].selected = doSelect;
+    }
+    if (runFunction) {
+        runFunction();
     }
 }
 
@@ -179,17 +182,22 @@ async function loadKeys() {
                 ${keys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
             <br><br>
-            <label>
-                <input type="checkbox" id="splitPlots">
-                One plot per key
-            </label>
-            <label>
-                <input type="checkbox" id="selectAllKeys">
-                Select all keys
-            </label>
+            <div class="form-check form-check-inline me-3">
+                <input class="form-check-input" type="checkbox" id="splitPlots">
+                <label class="form-check-label" for="splitPlots">
+                    One plot per key
+                </label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="selectAllKeys">
+                <label class="form-check-label" for="selectAllKeys">
+                    Select all keys
+                </label>
+            </div>
         `;
         document.getElementById("splitPlots").addEventListener("change", onSplitPlotsToggle);
-        document.getElementById("selectAllKeys").addEventListener("change", () => toggleSelectAll("keys", document.getElementById("selectAllKeys").checked));
+        document.getElementById("selectAllKeys").addEventListener("change", () => toggleSelectAll("keys", document.getElementById("selectAllKeys").checked, autoloadPlot));
         document.getElementById("keys").addEventListener("change", autoloadPlot);
     } else {
         containerKeySelect.innerHTML = `
@@ -272,10 +280,12 @@ async function loadPlot() {
             <select id="keysToDeselect" multiple size="6">
                 ${data.uniqueKeys.map(k => `<option value="${k}">${k}</option>`).join("")}
             </select>
-            <label>
-                <input type="checkbox" id="selectAllDeselectKeys">
-                Select all keys
-            </label>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="selectAllDeselectKeys">
+                <label class="form-check-label" for="selectAllDeselectKeys">
+                    Select all keys
+                </label>
+            </div>
         `;
         const keyDeselctorContainer = document.getElementById("keysToDeselect");
 
@@ -287,7 +297,7 @@ async function loadPlot() {
         }
 
         keyDeselctorContainer.addEventListener("click", deselectKeyAndRenderChart);
-        document.getElementById("selectAllDeselectKeys").addEventListener("change", () => toggleSelectAll("keysToDeselect", document.getElementById("selectAllDeselectKeys").checked));
+        document.getElementById("selectAllDeselectKeys").addEventListener("change", () => toggleSelectAll("keysToDeselect", document.getElementById("selectAllDeselectKeys").checked, deselectKeyAndRenderChart));
     }
 
     if (source == "report_id") {
