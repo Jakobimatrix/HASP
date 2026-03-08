@@ -28,7 +28,8 @@ apt install -y \
     python3 \
     python3-pip \
     python3-flask \
-    python3-flask-cors
+    python3-flask-cors \
+    gunicorn
 
 echo "Cloning HASP repository..."
 cd "$HOME_DIR"
@@ -66,7 +67,7 @@ echo "Installing systemd service..."
 
 cat <<EOT > /etc/systemd/system/hasp.service
 [Unit]
-Description=HASP Flask Server
+Description=HASP Flask Server (Gunicorn)
 After=network.target local-fs.target
 Wants=network.target
 
@@ -75,13 +76,19 @@ Type=simple
 User=root
 WorkingDirectory=$HOME_DIR/HASP
 ExecStartPre=/bin/sleep 2
-ExecStart=/usr/bin/python3 -u $HOME_DIR/HASP/server.py
+ExecStart=/usr/local/bin/gunicorn \
+    -c $HOME_DIR/HASP/gunicorn.conf.py \
+    server:app
 
 Restart=always
 RestartSec=5
 
+StandardOutput=journal
+StandardError=journal
+
 [Install]
 WantedBy=multi-user.target
+
 EOT
 
 echo "Reloading systemd..."
@@ -98,4 +105,5 @@ python3 -m scripts.newUser
 
 echo "Installation complete."
 echo "Access HASP at: https://<your-server-ip>:5000"
-echo "Logs can be found in $HOME_DIR/HASP/logs/"
+echo "Logs can be found with journalctl -u hasp.service -f"
+echo "Control the service via systemctl start/stop/restart hasp.service

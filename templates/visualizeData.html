@@ -81,6 +81,7 @@
 <script>
 
 let lastSeries = [];
+let lastHistograms = [];
 let lastDeselectedKeys = [];
 let charts = [];
 let zoomMode = 'xy'; // default zoom mode
@@ -458,7 +459,6 @@ function createHistograms(idx) {
 
     let histograms = [];
 
-    // Step 1: read values from all datasets
     chart.data.datasets.forEach(dataset => {
         const values = dataset.data.map(p => p.y).sort((a, b) => a - b);
         if (values.length === 0) return;
@@ -499,7 +499,10 @@ function createHistograms(idx) {
             numValues: numValues,
             backgroundColor: dataset.backgroundColor || "rgba(75,192,192,0.5)"
         });
+
     });
+
+    lastHistograms.push(histograms);
 
     const newId = idx + 1;
 
@@ -550,13 +553,14 @@ function createHistograms(idx) {
         }
     });
     charts.push(newChart);
-    return newId + 1;
+    return newId + 1;  
 }
 
 
 function clearCharts() {
     charts.forEach(c => c.destroy());
     charts = [];
+    lastHistograms = [];
     document.getElementById("chartContainer").innerHTML = "";
     zoomHistory = [];
     zoomHistoryIndex = -1;
@@ -852,20 +856,20 @@ document.getElementById("resetZoomBtn").addEventListener("click", resetZoom);
 highlightModeButton("zoomXYBtn");
 
 
-function exportCSV() {
+function exportDataCSV() {
     if (!lastSeries.length) {
         alert("Nothing to export");
         return;
     }
 
-    const rows = ["device_id,key,timestamp,value"];
+    const rows = ["device_id,key,report_id,timestamp,value"];
 
     lastSeries.forEach(s => {
         s.points
         .slice()
         .sort((a, b) => a.t - b.t)
         .forEach(p => {
-            rows.push(`"${s.device_id}","${s.key}",${p.t},${p.v}`);
+            rows.push(`"${s.device_id}","${s.key}","${s.report_id}",${p.t},${p.v}`);
         });
     });
 
@@ -878,6 +882,57 @@ function exportCSV() {
     a.click();
 
     URL.revokeObjectURL(url);
+}
+
+function exportHistogramsCSV() {
+    if (!lastHistograms.length) {
+        alert("Nothing to export");
+        return;
+    }
+
+    const rows = [];
+
+    rows.push("label,min,max,num_bins,num_values");
+
+    lastHistograms.forEach(histogramSet => {
+        histogramSet.forEach(hist => {
+
+            const numBins = hist.data.length;
+
+            rows.push(
+                `"${hist.label}",` +
+                `${hist.min},` +
+                `${hist.max},` +
+                `${numBins},` +
+                `${hist.numValues}`
+            );
+
+            rows.push(
+                "bins," + hist.labels.join(",")
+            );
+
+            rows.push(
+                "counts," + hist.data.join(",")
+            );
+
+            rows.push("");
+        });
+    });
+
+    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "histograms.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+    exportDataCSV();
+    exportHistogramsCSV();
 }
 
 loadKeys();
