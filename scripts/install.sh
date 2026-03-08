@@ -76,7 +76,8 @@ Type=simple
 User=root
 WorkingDirectory=$HOME_DIR/HASP
 ExecStartPre=/bin/sleep 2
-ExecStart=/usr/local/bin/gunicorn \
+# might be /usr/local/bin/gunicorn ... "which gunicorn" will tell you
+ExecStart=/usr/bin/gunicorn \
     -c $HOME_DIR/HASP/gunicorn.conf.py \
     server:app
 
