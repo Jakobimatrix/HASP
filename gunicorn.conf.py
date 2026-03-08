@@ -13,8 +13,8 @@ keyfile = SSL_CERT_FILE
 
 def on_starting(server):
     from mqtt.client import startMqtt
-    from server import initialize_databases
+    from server import app, initialize_databases
     
-    initialize_databases()
-
-    startMqtt()
+    with app.app_context():
+        initialize_databases()
+        startMqtt()
