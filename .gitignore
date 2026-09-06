@@ -42,5 +42,3 @@ config.py
 .DS_Store
 Thumbs.db
 
-# Ignore old_hasp repo subtree completely
-/old_hasp/

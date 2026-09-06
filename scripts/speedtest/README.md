@@ -42,6 +42,34 @@ If you want the device to stay enabled by default:
 DEFAULT_ENABLED = True
 ```
 
+## Dependencies
+
+Use the shared venv
+
+```bash
+bash /root/HASP/scripts/create_venv.sh
+```
+
+
+
+## Cron job
+
+Install the script in a folder like `/root/speedtest` and use a venv for the dependencies.
+
+Example cron entry:
+
+```cron
+*/20 * * * * /root/speedtest/.venv/bin/python /root/speedtest/run_speedtest.py >> /var/log/speedtest.log 2>&1
+```
+
+If you keep the system Python and no venv, use:
+
+```cron
+*/20 * * * * /usr/bin/python3 /root/speedtest/run_speedtest.py >> /var/log/speedtest.log 2>&1
+```
+
+
+
 ## Home Assistant GUI steps
 
 1. Open Home Assistant.
@@ -76,8 +104,7 @@ or
 {"enabled": false}
 ```
 
-
-## How to enable or disable the script
+## How to enable or disable the script locally
 
 Use the local helper:
 
@@ -92,30 +119,3 @@ python3 /root/speedtest/set_state.py --enabled false
 ```
 
 This updates the local state file and also publishes the same value to the HA MQTT control topic.
-
-## Cron job
-
-Install the script in a folder like `/root/speedtest` and use a venv for the dependencies.
-
-Example cron entry:
-
-```cron
-*/20 * * * * /root/speedtest/.venv/bin/python /root/speedtest/run_speedtest.py >> /var/log/speedtest.log 2>&1
-```
-
-If you keep the system Python and no venv, use:
-
-```cron
-*/20 * * * * /usr/bin/python3 /root/speedtest/run_speedtest.py >> /var/log/speedtest.log 2>&1
-```
-
-## Dependencies
-
-Install the packages in the venv:
-
-```bash
-python3 -m venv /root/speedtest/.venv
-source /root/speedtest/.venv/bin/activate
-pip install speedtest-cli paho-mqtt
-```
-
