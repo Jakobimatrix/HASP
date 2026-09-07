@@ -1,40 +1,25 @@
 #!/usr/bin/env python3
 
 import json
-import os
 
-from config import CONTROL_TOPIC, DEFAULT_ENABLED, LOCAL_STATE_FILE
+from config import CONTROL_TOPIC
 
 
-def read_local_state() -> bool:
-    if not os.path.exists(LOCAL_STATE_FILE):
-        return DEFAULT_ENABLED
-
+def parse_enabled_payload(payload: str) -> bool:
     try:
-        with open(LOCAL_STATE_FILE, "r", encoding="utf-8") as handle:
-            data = json.load(handle)
+        data = json.loads(payload)
         if isinstance(data, dict):
-            return bool(data.get("enabled", DEFAULT_ENABLED))
+            return bool(data.get("enabled", True))
         if isinstance(data, bool):
             return data
-    except (OSError, ValueError, TypeError):
+    except (TypeError, ValueError):
         pass
-
-    return DEFAULT_ENABLED
-
-
-def write_local_state(enabled: bool) -> None:
-    with open(LOCAL_STATE_FILE, "w", encoding="utf-8") as handle:
-        json.dump({"enabled": bool(enabled)}, handle)
-
-
-def is_script_enabled() -> bool:
-    return read_local_state()
-
-
-def set_script_state(enabled: bool) -> None:
-    write_local_state(enabled)
+    return True
 
 
 def control_payload(enabled: bool) -> str:
     return json.dumps({"enabled": bool(enabled), "source": "ha"})
+
+
+def control_topic() -> str:
+    return CONTROL_TOPIC

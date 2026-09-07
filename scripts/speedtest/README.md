@@ -41,12 +41,6 @@ MQTT_USERNAME = ""
 MQTT_PASSWORD = ""
 ```
 
-If you want the device to stay enabled by default (IF HA is not reachable):
-
-```python
-DEFAULT_ENABLED = True
-```
-
 ## 2) Set up MQTT on Home Assistant
 
 1. Open Home Assistant.
@@ -157,25 +151,54 @@ Example payloads:
 {"enabled": false}
 ```
 
-## 5) Explain the local switch script
+### Restart safety: retained MQTT state
 
-The script `set_state.py` gives you a local way to toggle the speedtest from the server itself.
+MQTT `retain: true` keeps the last message on the topic. This is the important part for restart safety.
 
-Use it like this:
+If the broker restarts and clears retained state, the last MQTT value is lost. In that case, the cron job will default to enabled only if no retained message exists.
 
-```bash
-/root/HASP/scripts/.venv/bin/python /root/HASP/scripts/speedtest/set_state.py --enabled true
+For a durable restart-safe setup, use one of these options in Home Assistant:
+
+1. Keep the toggle helper as the source of truth and re-publish it on HA startup.
+2. Use an automation triggered by HA startup to publish the current toggle state again:
+
+```yaml
+alias: Speedtest control republish on startup
+triggers:
+  - trigger: homeassistant
+    event: start
+actions:
+  - choose:
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.speedtest_device123_enabled
+            state: "on"
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: devices/device123/control
+              payload: '{"enabled": true}'
+              retain: true
+      - conditions:
+          - condition: state
+            entity_id: input_boolean.speedtest_device123_enabled
+            state: "off"
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: devices/device123/control
+              payload: '{"enabled": false}'
+              retain: true
 ```
 
-or:
+3. If your broker is configured to clear retained messages at restart, this startup automation is the simplest HA-side fix.
 
-```bash
-/root/HASP/scripts/.venv/bin/python /root/HASP/scripts/speedtest/set_state.py --enabled false
-```
+This ensures that the last toggle state is restored immediately after Home Assistant comes back online.
 
-This updates the local state file and publishes the same value to the HA MQTT control topic.
+### Debug
+run `/root/HASP/scripts/.venv/bin/python /root/HASP/scripts/speedtest/mqtt_listener.py`
+to view received messages.
 
-The script reads the same control topic so HA and the local server stay in sync.
 
 ## Result
 
@@ -185,3 +208,5 @@ After setup, Home Assistant will show three entities for your device:
 - `sensor.speedtest_ping_device123`
 
 Add them to a dashboard with an Entities card or History Graph card.
+
+

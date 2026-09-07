@@ -45,9 +45,5 @@ DISCOVERY_UNIQUE_ID = {
     "ping": f"{DEVICE_ID}_speedtest_ping",
 }
 
-DEFAULT_ENABLED = True
 
 
-# Optional: this is the state a cron job can read if HA is offline.
-# Keep it local and update it using the `set_state.py` helper if needed.
-LOCAL_STATE_FILE = "/tmp/speedtest_enabled.json"
