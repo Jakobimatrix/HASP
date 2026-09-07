@@ -9,8 +9,9 @@ This folder contains a small client-side example for a speedtest sensor.
 
 ## File list
 
-- config.py: central configuration values
+- template_config.py: template configuration values
 - mqtt_client.py: MQTT helpers and Home Assistant discovery publishing
+- mqtt_listener.py: MQTT helper for debugging incomming messages
 - state_manager.py: local enabled/disabled state helpers
 - speedtest_client.py: speedtest execution and payload formatting
 - run_speedtest.py: main cron entrypoint
@@ -23,8 +24,8 @@ Create the shared virtual environment:
 ```bash
 bash /root/HASP/scripts/create_venv.sh
 ```
-
-Then edit the config before running the script:
+copy `template_config.py` to `config.py`
+Then edit the config.py before running the script:
 
 ```python
 DEVICE_ID = "device123"

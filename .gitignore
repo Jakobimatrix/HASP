@@ -29,7 +29,7 @@ htmlcov/
 
 # Local secret or config files
 config.py
-speedtest_enabled.json
+scripts/speedtest/config.py
 *.secret
 *.env
 .env

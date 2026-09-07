@@ -45,5 +45,3 @@ DISCOVERY_UNIQUE_ID = {
     "ping": f"{DEVICE_ID}_speedtest_ping",
 }
 
-
-
