@@ -27,8 +27,9 @@ ENV/
 .coverage.*
 htmlcov/
 
-# Local secret config files
+# Local secret or config files
 config.py
+speedtest_enabled.json
 *.secret
 *.env
 .env
