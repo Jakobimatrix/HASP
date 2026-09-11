@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 from database import init_db, insert_new_trades, read_all_trades
 from scrapeCongress import fetch_table_data_headless_browser, ScrapeError
-from config import HASP_URL, ID, STATES, GLOBAL_CURRENT_STATE, DB_FILE, URL_BASE, URL_PAGE, TABLE_CLASS, SMTP_MAIL, SMTP_MAIL_PASSWORD, SUBSCRIBERS, ADMIN
+from config import DB_FILE, URL_BASE, URL_PAGE, TABLE_CLASS, SMTP_MAIL, SMTP_MAIL_PASSWORD, SUBSCRIBERS, ADMIN
 
 
 def send_mail(subject: str, body: str, to_addr: str):
