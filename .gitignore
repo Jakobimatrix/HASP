@@ -30,10 +30,15 @@ htmlcov/
 # Local secret or config files
 config.py
 scripts/speedtest/config.py
+mailinglist.py
+log.txt
 *.secret
 *.env
 .env
 .env.*
+
+# DBs
+congress_trading.db
 
 # IDE/editor noise
 .vscode/
