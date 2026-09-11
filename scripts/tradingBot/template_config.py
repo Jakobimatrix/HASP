@@ -38,11 +38,11 @@ MANUFACTURER = "Custom"
 MODEL = "tradewatcher-sensor"
 
 METRICS = {
-    "tradewatcher": {
-        "name": f"tradewatcher_{DEVICE_ID}",
+    "num_trades": {
+        "name": f"num_trades_{DEVICE_ID}",
         "unit": "stk",
-        "value_template": "{{ value_json.tradewatcher }}",
-        "unique_id": f"{DEVICE_ID}_tradewatcher",
+        "value_template": "{{ value_json.num_trades }}",
+        "unique_id": f"{DEVICE_ID}_num_trades",
     },
 }
 

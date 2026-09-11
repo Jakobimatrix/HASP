@@ -76,8 +76,8 @@ def run_tradingbot() -> int:
         new_trades = insert_new_trades(data)
         
         if not new_trades:
-            print("No new trades, exiting.")
-            return
+            print("No new trades, publishing count 0.")
+            return 0
 
         # 3. Convert & filter
         df = pd.DataFrame(new_trades)
@@ -141,5 +141,5 @@ def run_tradingbot() -> int:
 def build_payload(device_id: str, num_trades: int) -> dict:
     return {
         "device_id": device_id,
-        "num_trades": num_trades
+        "num_trades": num_trades,
     }
