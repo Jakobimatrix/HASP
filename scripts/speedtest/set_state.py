@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
+from pathlib import Path
 
-from config import CONTROL_TOPIC, DEVICE_ID
-from mqtt_client import build_client, publish_disabled_message
-from state_manager import set_script_state
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import config
+from config import DEVICE_ID
+from MQTT.mqtt_client import build_client, publish_control
 
 
 def main() -> int:
@@ -13,11 +17,11 @@ def main() -> int:
     args = parser.parse_args()
 
     enabled = args.enabled == "true"
-    set_script_state(enabled)
-
-    client = build_client()
-    client.publish(CONTROL_TOPIC, __import__("json").dumps({"enabled": enabled, "source": "local-script"}), retain=True)
-    client.disconnect()
+    client = build_client(config)
+    try:
+        publish_control(client, config, enabled, "local-script")
+    finally:
+        client.disconnect()
     print(f"State set to {enabled} for {DEVICE_ID}")
     return 0
 

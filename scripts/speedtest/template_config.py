@@ -2,46 +2,43 @@
 
 DEVICE_ID = "device123"
 DEVICE_NAME = "Speedtest device123"
+SENSOR_NAME = "speedtest"
+TOPIC_PREFIX = "devices"
+TRIGGER_SOURCE = "cronjob"
 
 MQTT_BROKER = "192.168.178.106"
 MQTT_PORT = 1883
 MQTT_USERNAME = "mqtt2HA"
 MQTT_PASSWORD = "test"
+MQTT_KEEPALIVE = 60
 
 HA_DISCOVERY_PREFIX = "homeassistant"
+DEFAULT_ENABLED = True
+MANUFACTURER = "Custom"
+MODEL = "speedtest"
 
-CONTROL_TOPIC = f"devices/{DEVICE_ID}/control"
-STATE_TOPIC = f"devices/{DEVICE_ID}/speedtest"
-ATTRS_TOPIC = f"devices/{DEVICE_ID}/speedtest/attrs"
-ACK_TOPIC = f"devices/{DEVICE_ID}/state/ack"
-
-DISCOVERY_TOPICS = {
-    "download": f"{HA_DISCOVERY_PREFIX}/sensor/{DEVICE_ID}_download/config",
-    "upload": f"{HA_DISCOVERY_PREFIX}/sensor/{DEVICE_ID}_upload/config",
-    "ping": f"{HA_DISCOVERY_PREFIX}/sensor/{DEVICE_ID}_ping/config",
+METRICS = {
+    "download": {
+        "name": f"speedtest_download_{DEVICE_ID}",
+        "unit": "Mbit/s",
+        "value_template": "{{ value_json.download }}",
+        "unique_id": f"{DEVICE_ID}_speedtest_download",
+    },
+    "upload": {
+        "name": f"speedtest_upload_{DEVICE_ID}",
+        "unit": "Mbit/s",
+        "value_template": "{{ value_json.upload }}",
+        "unique_id": f"{DEVICE_ID}_speedtest_upload",
+    },
+    "ping": {
+        "name": f"speedtest_ping_{DEVICE_ID}",
+        "unit": "ms",
+        "value_template": "{{ value_json.ping }}",
+        "unique_id": f"{DEVICE_ID}_speedtest_ping",
+    },
 }
 
-DISCOVERY_NAME = {
-    "download": f"speedtest_download_{DEVICE_ID}",
-    "upload": f"speedtest_upload_{DEVICE_ID}",
-    "ping": f"speedtest_ping_{DEVICE_ID}",
-}
 
-DISCOVERY_UNIT = {
-    "download": "Mbit/s",
-    "upload": "Mbit/s",
-    "ping": "ms",
-}
-
-DISCOVERY_TEMPLATE = {
-    "download": "{{ value_json.download }}",
-    "upload": "{{ value_json.upload }}",
-    "ping": "{{ value_json.ping }}",
-}
-
-DISCOVERY_UNIQUE_ID = {
-    "download": f"{DEVICE_ID}_speedtest_download",
-    "upload": f"{DEVICE_ID}_speedtest_upload",
-    "ping": f"{DEVICE_ID}_speedtest_ping",
-}
+def discovery_topic(metric: str) -> str:
+    return f"{HA_DISCOVERY_PREFIX}/sensor/{DEVICE_ID}_{metric}/config"
 

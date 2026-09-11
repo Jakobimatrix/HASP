@@ -10,9 +10,7 @@ This folder contains a small client-side example for a speedtest sensor.
 ## File list
 
 - template_config.py: template configuration values
-- mqtt_client.py: MQTT helpers and Home Assistant discovery publishing
-- mqtt_listener.py: MQTT helper for debugging incomming messages
-- state_manager.py: local enabled/disabled state helpers
+- ../MQTT/mqtt_client.py: shared MQTT and Home Assistant discovery helpers
 - speedtest_client.py: speedtest execution and payload formatting
 - run_speedtest.py: main cron entrypoint
 - set_state.py: local toggle helper for enable/disable state
@@ -25,7 +23,7 @@ Create the shared virtual environment:
 bash /root/HASP/scripts/create_venv.sh
 ```
 copy `template_config.py` to `config.py`
-Then edit the config.py before running the script:
+Then edit the config.py before running the script. It is copied from template_config.py:
 
 ```python
 DEVICE_ID = "device123"
@@ -34,6 +32,10 @@ MQTT_PORT = 1883
 MQTT_USERNAME = "mqtt2HA"
 MQTT_PASSWORD = "*******"
 ```
+
+The shared MQTT module derives control, state, attributes, acknowledgement, and
+Home Assistant discovery topics from `DEVICE_ID`, `SENSOR_NAME`, and
+`TOPIC_PREFIX`. A new sensor only needs its own config and cron entrypoint.
 
 If your Mosquitto broker is anonymous, set:
 
@@ -195,11 +197,6 @@ actions:
 3. If your broker is configured to clear retained messages at restart, this startup automation is the simplest HA-side fix.
 
 This ensures that the last toggle state is restored immediately after Home Assistant comes back online.
-
-### Debug
-run `/root/HASP/scripts/.venv/bin/python /root/HASP/scripts/speedtest/mqtt_listener.py`
-to view received messages.
-
 
 ## Result
 
