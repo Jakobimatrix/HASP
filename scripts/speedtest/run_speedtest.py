@@ -28,7 +28,16 @@ def main() -> int:
 
         payload = build_payload(DEVICE_ID, download, upload, ping, response_time_ms)
         publish_status(client, config, payload)
-        publish_attributes(client, config, build_attributes(TRIGGER_SOURCE, DEVICE_ID, response_time_ms))
+        publish_attributes(
+            client,
+            config,
+            build_attributes(
+                TRIGGER_SOURCE,
+                DEVICE_ID,
+                response_time_ms,
+                payload,
+            ),
+        )
         publish_ack(client, config, "running")
         client.disconnect()
         return 0

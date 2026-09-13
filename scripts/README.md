@@ -1,6 +1,6 @@
 # Speedtest client for Home Assistant MQTT
 
-This folder contains a small client-side example for a speedtest sensor.
+This folder contains a small client-side example for a speedtest sensor but can be used for any other subfolder.
 
 - register one device
 - collect download, upload, and ping values

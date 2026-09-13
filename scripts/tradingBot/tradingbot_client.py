@@ -12,6 +12,7 @@ from email.mime.text import MIMEText
 from database import init_db, insert_new_trades, read_all_trades
 from scrapeCongress import fetch_table_data_headless_browser, ScrapeError
 from config import DB_FILE, URL_BASE, URL_PAGE, TABLE_CLASS, SMTP_MAIL, SMTP_MAIL_PASSWORD, SUBSCRIBERS, ADMIN
+from MQTT.mqtt_client import build_payload as build_sensor_payload
 
 
 def send_mail(subject: str, body: str, to_addr: str):
@@ -139,7 +140,13 @@ def run_tradingbot() -> int:
 
 
 def build_payload(device_id: str, num_trades: int) -> dict:
-    return {
-        "device_id": device_id,
-        "num_trades": num_trades,
-    }
+    def validate(value) -> str:
+        if not isinstance(value, int) or isinstance(value, bool):
+            return "is not an integer"
+        if value < 0:
+            return "The Bot had an internal failure"
+        if value > 10000:
+            return "Over 10000 Trades?! The webpage does only show like 100"
+        return ""
+
+    return build_sensor_payload(device_id, ("num_trades", num_trades, validate))
