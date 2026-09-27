@@ -25,12 +25,16 @@ def main() -> int:
 
     started = time.perf_counter()
     client = None
+    num_trades = 0
     try:
         client = build_client(config)
         publish_discovery(client, config)
+
+        speedtest_start = time.perf_counter()
         num_trades = run_tradingbot()
-        response_time_ms = (time.perf_counter() - started) * 1000
-        payload = build_payload(DEVICE_ID, num_trades)
+        duration_s = (time.perf_counter() - speedtest_start)
+
+        payload = build_payload(DEVICE_ID, num_trades, duration_s)
         publish_status(client, config, payload)
         publish_attributes(
             client,
@@ -38,17 +42,16 @@ def main() -> int:
             build_attributes(
                 TRIGGER_SOURCE,
                 DEVICE_ID,
-                response_time_ms,
                 payload,
             ),
         )
         publish_ack(client, config, "running")
-        return 0
     except Exception as exc:  # pragma: no cover
-        return 1
+        num_trades = -1
     finally:
         if client is not None:
             client.disconnect()
+    return num_trades
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ This folder contains a small client-side example for a speedtest sensor but can 
 - collect download, upload, and ping values
 - publish discovery so HA creates three sensor entities
 - support enable/disable state via a control topic
+- supports error topics where results land instead of the instrument topic to have clean graphs.
 
 ## File list
 
@@ -29,7 +30,7 @@ Then edit the config.py before running the script. It is copied from template_co
 DEVICE_ID = "device123"
 MQTT_BROKER = "192.168.178.106"
 MQTT_PORT = 1883
-MQTT_USERNAME = "mqtt2HA"
+MQTT_USERNAME = "mqtt_user_"
 MQTT_PASSWORD = "*******"
 ```
 
@@ -53,16 +54,9 @@ MQTT_PASSWORD = ""
    - Host: `192.168.178.106`
    - Port: `1883`
 5. If the broker requires credentials, use the same username/password as the Mosquitto add-on.
-6. If you do not want a second login layer, configure Mosquitto as anonymous:
 
-```json
-{
-  "logins": [],
-  "anonymous": true
-}
-```
 
-7. Save and reload the MQTT integration if needed.
+6. Save and reload the MQTT integration if needed.
 
 The discovery topics published by the client will create the sensors automatically once MQTT is active.
 
@@ -80,6 +74,7 @@ The cron script runs the speedtest and publishes:
 - ping value
 - attributes
 - discovery messages for HA
+- for each sensor an error topic to filter bad values
 
 ## 4) Set up the HA switch
 
@@ -200,11 +195,13 @@ This ensures that the last toggle state is restored immediately after Home Assis
 
 ## Result
 
-After setup, Home Assistant will show three entities for your device:
+After setup, Home Assistant will show three entities + three error entities for your device:
 - `sensor.speedtest_download_device123`
 - `sensor.speedtest_upload_device123`
 - `sensor.speedtest_ping_device123`
-
+- `sensor.speedtest_download_device123_error`
+- `sensor.speedtest_upload_device123_error`
+- `sensor.speedtest_ping_device123_error`
 Add them to a dashboard with an Entities card or History Graph card.
 
 

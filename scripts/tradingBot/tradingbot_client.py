@@ -139,14 +139,41 @@ def run_tradingbot() -> int:
     return -1;
 
 
-def build_payload(device_id: str, num_trades: int) -> dict:
-    def validate(value) -> str:
-        if not isinstance(value, int) or isinstance(value, bool):
-            return "is not an integer"
+def build_payload(device_id: str, num_trades: int, duration_s: float) -> dict:
+
+    def validate(value: float) -> str:
+        if not isinstance(value, (int, float)):
+            return "is not a number"
+        if value != value or value in (float("inf"), float("-inf")):
+            return "is not finite"
         if value < 0:
+            return "cannot be negative"
+        return ""
+
+    def validate_num_trades(num_trades) -> str:
+        number_error = validate(num_trades)
+        if number_error:
+            return number_error
+        if num_trades < 0:
             return "The Bot had an internal failure"
-        if value > 10000:
+        if num_trades > 10000:
             return "Over 10000 Trades?! The webpage does only show like 100"
         return ""
 
-    return build_sensor_payload(device_id, ("num_trades", num_trades, validate))
+    def validate_duration(duration_s: float) -> str:
+        number_error = validate(duration_s)
+        if number_error:
+            return number_error
+        if duration_s < 1:
+            return f"A duration of {duration_s} seconds seems unusually short"
+        return ""
+
+    def rounded(value: float) -> float:
+        return round(value, 2) if isinstance(value, (int, float)) else value
+
+    payload = build_sensor_payload(
+        device_id,
+        ("num_trades", num_trades, validate_num_trades),
+        ("crawl_duration", rounded(duration_s), validate_duration),
+    )
+    return payload

@@ -30,7 +30,6 @@ def main() -> int:
         client = build_client(config)
         publish_discovery(client, config)
         temperature = get_temperature()
-        response_time_ms = (time.perf_counter() - started) * 1000
         payload = build_payload(DEVICE_ID, temperature)
         publish_status(client, config, payload)
         publish_attributes(
@@ -39,7 +38,6 @@ def main() -> int:
             build_attributes(
                 TRIGGER_SOURCE,
                 DEVICE_ID,
-                response_time_ms,
                 payload,
             ),
         )

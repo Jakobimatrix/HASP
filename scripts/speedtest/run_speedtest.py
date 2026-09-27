@@ -23,10 +23,12 @@ def main() -> int:
         client = build_client(config)
         publish_discovery(client, config)
 
+        speedtest_start = time.perf_counter()
         download, upload, ping = run_speedtest()
-        response_time_ms = (time.perf_counter() - start) * 1000
+        duration_s = (time.perf_counter() - speedtest_start)
+        
 
-        payload = build_payload(DEVICE_ID, download, upload, ping, response_time_ms)
+        payload = build_payload(DEVICE_ID, download, upload, ping, duration_s)
         publish_status(client, config, payload)
         publish_attributes(
             client,
@@ -34,7 +36,6 @@ def main() -> int:
             build_attributes(
                 TRIGGER_SOURCE,
                 DEVICE_ID,
-                response_time_ms,
                 payload,
             ),
         )

@@ -154,7 +154,7 @@ def build_payload(device_id: str, *readings: tuple[str, Any, Any]) -> dict:
         publish_attributes(
             client,
             config,
-            build_attributes("cronjob", "device123", 120.0, payload),
+            build_attributes("cronjob", "device123", payload),
         )
 
     A valid value produces ``{"temperature": 21.5}``. An invalid value
@@ -175,7 +175,6 @@ def build_payload(device_id: str, *readings: tuple[str, Any, Any]) -> dict:
 def build_attributes(
     source: str,
     device_id: str,
-    response_time_ms: float,
     payload: dict | None = None,
 ) -> dict:
     """Build attributes from the payload returned by ``build_payload``.
@@ -187,7 +186,7 @@ def build_attributes(
 
         payload = build_payload("device123", ("ping", -1, validate_ping))
         publish_status(client, config, payload)
-        attributes = build_attributes("cronjob", "device123", 85.0, payload)
+        attributes = build_attributes("cronjob", "device123", payload)
         publish_attributes(client, config, attributes)
 
     Home Assistant associates both messages with one entity through the
@@ -201,7 +200,6 @@ def build_attributes(
     return {
         "source": source,
         "device_id": device_id,
-        "response_time_ms": round(response_time_ms, 2),
         "last_update": int(time.time()),
         "sensor_error": "; ".join(f"{key}: {value}" for key, value in errors.items()),
         "sensor_error_count": len(errors),
