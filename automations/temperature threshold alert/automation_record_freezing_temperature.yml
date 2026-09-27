@@ -1,0 +1,23 @@
+alias: Weather - Record Freezing Temperature
+description: >-
+  Records the last time the actual temperature was below the configured freezing
+  threshold.
+triggers:
+  - trigger: state
+    entity_id: weather.forecast_home_2
+  - trigger: time_pattern
+    minutes: /15
+conditions:
+  - condition: template
+    value_template: |
+      {{
+        state_attr('weather.forecast_home_2', 'temperature') | float(999)
+        < states('input_number.alert_freezing_temperature_threshold') | float(0)
+      }}
+actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.last_freezing_date
+    data:
+      datetime: "{{ now().isoformat() }}"
+mode: restart

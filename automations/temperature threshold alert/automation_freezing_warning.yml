@@ -1,0 +1,99 @@
+alias: Weather - Freezing Temperature Warning
+description: >-
+  Warns when freezing temperatures are forecast after the configured frost-free
+  period.
+triggers:
+  - trigger: time_pattern
+    hours: /1
+
+actions:
+  - action: weather.get_forecasts
+    target:
+      entity_id: weather.forecast_home_2
+    data:
+      type: daily
+    response_variable: weather_forecast
+
+  - variables:
+      threshold: "{{ states('input_number.alert_freezing_temperature_threshold') | float(0) }}"
+      lookahead_days: "{{ states('input_number.forecast_lookahead') | float(1) }}"
+      cooldown_days: "{{ states('input_number.alert_cooldown_time') | float(5) }}"
+      last_freezing: "{{ states('input_datetime.last_freezing_date') }}"
+      last_warning: "{{ states('input_datetime.last_alert_freezing') }}"
+
+  - variables:
+      freezing_forecast: >-
+        {% set forecasts = weather_forecast['weather.forecast_home_2']['forecast'] %}
+        {% set cutoff = now() + timedelta(days=lookahead_days) %}
+        {% set threshold_value = threshold | float(0) %}
+        {% set found = namespace(value=false) %}
+
+        {% for forecast in forecasts %}
+          {% if forecast.datetime is defined
+                and forecast.temperature is defined
+                and (forecast.temperature | float(999)) < threshold_value
+                and as_datetime(forecast.datetime) < cutoff %}
+            {% set found.value = true %}
+          {% endif %}
+        {% endfor %}
+
+        {{ found.value }}
+
+      first_day_freezing: >-
+        {% set forecasts = weather_forecast['weather.forecast_home_2']['forecast'] %}
+        {% set cutoff = now() + timedelta(days=lookahead_days) %}
+        {% set threshold_value = threshold | float(0) %}
+        {% set found = namespace(day='') %}
+
+        {% for forecast in forecasts %}
+          {% if forecast.datetime is defined
+                and forecast.temperature is defined
+                and (forecast.temperature | float(999)) < threshold_value
+                and as_datetime(forecast.datetime) < cutoff
+                and not found.day %}
+            {% set found.day = as_datetime(forecast.datetime).strftime('%A, %d.%m.%Y') %}
+          {% endif %}
+        {% endfor %}
+
+        {{ found.day }}
+
+  - condition: template
+    value_template: "{{ freezing_forecast }}"
+
+  - condition: template
+    value_template: |
+      {% if last_freezing in ['unknown', 'unavailable', 'none', ''] %}
+        true
+      {% else %}
+        {{
+          (as_timestamp(now()) - as_timestamp(last_freezing))
+          >= cooldown_days * 86400
+        }}
+      {% endif %}
+
+  - condition: template
+    value_template: |
+      {% if last_warning in ['unknown', 'unavailable', 'none', ''] %}
+        true
+      {% else %}
+        {{
+          (as_timestamp(now()) - as_timestamp(last_warning))
+          >= cooldown_days * 86400
+        }}
+      {% endif %}
+
+  - action: notify.send_message
+    target:
+      entity_id: notify.all_phones
+    data:
+      title: Freezing temperatures expected
+      message: >
+        Temperatures below {{ threshold }} °C are expected on {{ first_day_freezing }}.
+
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.last_alert_freezing
+    data:
+      datetime: "{{ now().isoformat() }}"
+
+mode: single

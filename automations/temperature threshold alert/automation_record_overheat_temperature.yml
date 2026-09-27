@@ -1,0 +1,23 @@
+alias: Weather - Record OverHeat Temperature
+description: >-
+  Records the last time the actual temperature was above the configured overHeat
+  threshold.
+triggers:
+  - trigger: state
+    entity_id: weather.forecast_home_2
+  - trigger: time_pattern
+    minutes: /15
+conditions:
+  - condition: template
+    value_template: |
+      {{
+        state_attr('weather.forecast_home_2', 'temperature') | float(0)
+        > states('input_number.alert_overheat_temperature') | float(0)
+      }}
+actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.last_overheat_date
+    data:
+      datetime: "{{ now().isoformat() }}"
+mode: restart
