@@ -102,6 +102,8 @@ def publish_discovery(client: mqtt.Client, config: Any) -> None:
         }
         if definition.get("unit"):
             payload["unit_of_measurement"] = definition["unit"]
+        if definition.get("state_class"):
+            payload["state_class"] = definition["state_class"]
         client.publish(config.discovery_topic(metric), json.dumps(payload), retain=True)
 
         error_payload = {
