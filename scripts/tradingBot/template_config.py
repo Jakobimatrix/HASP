@@ -55,12 +55,14 @@ METRICS = {
     "num_trades": {
         "name": f"num_trades_{DEVICE_ID}_{SENSOR_NAME}",
         "unit": "stk",
+        "state_class": "measurement",
         "value_template": "{{ value_json.num_trades }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_num_trades",
     },
     "crawl_duration": {
         "name": f"crawl_duration_{DEVICE_ID}_{SENSOR_NAME}",
         "unit": "s",
+        "state_class": "measurement",
         "value_template": "{{ value_json.crawl_duration }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_duration",
     }
