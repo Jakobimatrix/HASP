@@ -35,6 +35,7 @@ METRICS = {
     "temperature": {
         "name": f"temperature_{DEVICE_ID}",
         "unit": "°C",
+        "state_class": "measurement",
         "value_template": "{{ value_json.temperature }}",
         "unique_id": f"{DEVICE_ID}_temperature",
     },
