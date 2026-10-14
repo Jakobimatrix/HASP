@@ -35,24 +35,28 @@ METRICS = {
     "download": {
         "name": f"{SENSOR_NAME}_download_{DEVICE_ID}",
         "unit": "Mbit/s",
+        "state_class": "measurement",
         "value_template": "{{ value_json.download }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_download",
     },
     "upload": {
         "name": f"{SENSOR_NAME}_upload_{DEVICE_ID}",
         "unit": "Mbit/s",
+        "state_class": "measurement",
         "value_template": "{{ value_json.upload }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_upload",
     },
     "ping": {
         "name": f"{SENSOR_NAME}_ping_{DEVICE_ID}",
         "unit": "ms",
+        "state_class": "measurement",
         "value_template": "{{ value_json.ping }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_ping",
     },
     "measurement_duration": {
         "name": f"{SENSOR_NAME}_measurement_duration_{DEVICE_ID}",
         "unit": "s",
+        "state_class": "measurement",
         "value_template": "{{ value_json.measurement_duration }}",
         "unique_id": f"{DEVICE_ID}_{SENSOR_NAME}_measurement_duration",
     }
